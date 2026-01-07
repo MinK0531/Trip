@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+</head>
+<body class="min-h-screen relative overflow-hidden">
+
+<div class="absolute inset-0">
+    <img
+            src="https://images.unsplash.com/photo-1676559628393-c758954a1153"
+            alt="하늘 배경"
+            class="w-full h-full object-cover"
+    />
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/30 to-purple-500/30"></div>
+</div>
+
+<div class="relative flex items-center justify-center min-h-screen p-4 md:p-8">
+    <div class="w-full max-w-4xl">
+
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-[1fr_auto_1fr]">
+
+            <div class="p-10 bg-gradient-to-br from-blue-50 to-white">
+                <div class="flex items-center gap-2 mb-6">
+                    <i data-lucide="plane" class="w-6 h-6 text-blue-600"></i>
+                    <span class="text-sm text-blue-600">BOARDING PASS</span>
+                </div>
+
+                <div class="space-y-7">
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">출발지</p>
+                        <p class="text-2xl">현재 위치</p>
+                        <p class="text-sm text-gray-600">Your Current Location</p>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1 border-t-2 border-dashed border-gray-300"></div>
+                        <i data-lucide="plane" class="w-5 h-5 text-blue-600 rotate-90"></i>
+                        <div class="flex-1 border-t-2 border-dashed border-gray-300"></div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">목적지</p>
+                        <p class="text-2xl">여행의 세계</p>
+                        <p class="text-sm text-gray-600">Travel Community</p>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200 space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">탑승일</span>
+                            <span>2024.01.01</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">클래스</span>
+                            <span>First Class</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-t border-gray-200 text-center">
+                        <div class="flex justify-center gap-[2px] mb-2">
+                            <img src="/img/barcode.png">
+                        </div>
+                        <p class="text-xs text-gray-400 tracking-widest">
+                            TRAVEL-SNS-2024-BOARDING
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="hidden md:block w-px bg-gray-200 relative"></div>
+
+            <div class="p-10">
+                <h2 class="mb-2 text-2xl font-semibold">탑승권 발급</h2>
+                <p class="text-sm text-gray-600 mb-3">여행 커뮤니티 회원가입</p>
+
+                <form class="space-y-2">
+
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Passenger Name</label>
+                        <input
+                                type="text"
+                                placeholder="이름을 입력하세요"
+                                class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Email Address</label>
+                        <input
+                                type="email"
+                                placeholder="example@email.com"
+                                class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Id</label>
+                        <input
+                                type="id"
+                                placeholder="id를 입력하세요"
+                                class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Password Code</label>
+                        <input
+                                type="password"
+                                placeholder="비밀번호를 입력하세요"
+                                class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Password Confirm</label>
+                        <input
+                                type="password"
+                                placeholder="비밀번호 확인"
+                                class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
+                        />
+                    </div>
+
+                    <button
+                            type="submit"
+                            class="w-full h-12  bg-blue-600 text-white rounded-md hover:bg-blue-700 mt-4"
+                    >
+                        탑승권 발급하기
+                    </button>
+
+                </form>
+
+                <p class="mt-4 text-center text-sm text-gray-600">
+                    이미 탑승권이 있으신가요?
+                    <a href="#" class="text-blue-600 hover:underline ml-1">sign in</a>
+                </p>
+            </div>
+        </div>
+
+        <p class="mt-4 text-center text-white text-sm opacity-90">
+            ✈️ 전 세계 여행자들과 함께 특별한 여행을 시작하세요
+        </p>
+
+    </div>
+</div>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    lucide.createIcons();
+</script>
+
+</body>
+</html>
