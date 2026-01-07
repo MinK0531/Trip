@@ -82,6 +82,7 @@
                         <input
                                 type="text"
                                 placeholder="이름을 입력하세요"
+                                id="nameInput"
                                 class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
                         />
                     </div>
@@ -91,24 +92,41 @@
                         <input
                                 type="email"
                                 placeholder="example@email.com"
+                                id="emailInput"
                                 class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
                         />
                     </div>
 
+                    <div class="small text-danger mt-2 ml-2 d-none" id="emailInvalidText">이메일 형식이 올바르지 않습니다.</div>
+
                     <div>
                         <label class="text-xs text-gray-500 uppercase">Id</label>
-                        <input
-                                type="id"
-                                placeholder="id를 입력하세요"
-                                class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
-                        />
+
+                        <div class="flex items-center gap-2 mt-1">
+                            <input
+                                    type="text"
+                                    placeholder="id를 입력하세요"
+                                    id="idInput"
+                                    class="flex-1 h-11 px-4 rounded-md bg-gray-50 border border-gray-200"
+                            />
+                            <button
+                                    type="button"
+                                    class="h-11 px-3 bg-gray-200 rounded-md text-sm"
+                                    id="duplicateBtn"
+                            >
+                                중복확인
+                            </button>
+                        </div>
                     </div>
+                    <div class="small text-danger mt-2 ml-2 d-none" id="idDuplicateText">중복되었습니다.</div>
+                    <div class="small text-info mt-2 ml-2 d-none" id="idAvailableText">사용 가능합니다.</div>
 
                     <div>
                         <label class="text-xs text-gray-500 uppercase">Password Code</label>
                         <input
                                 type="password"
                                 placeholder="비밀번호를 입력하세요"
+                                id="passwordInput"
                                 class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
                         />
                     </div>
@@ -118,12 +136,18 @@
                         <input
                                 type="password"
                                 placeholder="비밀번호 확인"
+                                id="passwordConfirmInput"
                                 class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
                         />
+
                     </div>
+                    <div class="small text-danger mt-2 ml-2 d-none" id="passwordDuplicateText">불일치합니다</div>
+                    <div class="small text-info mt-2 ml-2 d-none" id="passwordAvailableText">일치합니다</div>
+
 
                     <button
-                            type="submit"
+                            type="button"
+                            id="signupBtn"
                             class="w-full h-12  bg-blue-600 text-white rounded-md hover:bg-blue-700 mt-4"
                     >
                         탑승권 발급하기
@@ -133,7 +157,7 @@
 
                 <p class="mt-4 text-center text-sm text-gray-600">
                     이미 탑승권이 있으신가요?
-                    <a href="#" class="text-blue-600 hover:underline ml-1">sign in</a>
+                    <a href="/user/signin" class="text-blue-600 hover:underline ml-1">sign in</a>
                 </p>
             </div>
         </div>
@@ -146,11 +170,151 @@
 </div>
 
 <script src="https://cdn.tailwindcss.com"></script>
-
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
     lucide.createIcons();
 </script>
+<script>
+    var isIdChecked = false;
+    var isIdDuplicate = true;
 
+    function isValidEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    $("#emailInput").on("input", function(){
+        const email = $(this).val();
+        if(email === ""){
+            $("#emailInvalidText").addClass("d-none");
+            return;
+        }
+
+        if(!isValidEmail(email)){
+            $("#emailInvalidText").removeClass("d-none");
+        } else {
+            $("#emailInvalidText").addClass("d-none");
+        }
+    });
+
+    $("#passwordInput, #passwordConfirmInput").on("input", function() {
+        let password = $("#passwordInput").val();
+        let passwordConfirm = $("#passwordConfirmInput").val();
+
+        if(password === "" || passwordConfirm === ""){
+            $("#passwordDuplicateText").addClass("d-none");
+            $("#passwordAvailableText").addClass("d-none");
+            return;
+        }
+
+        if(passwordConfirm !== password) {
+            $("#passwordDuplicateText").removeClass("d-none");
+            $("#passwordAvailableText").addClass("d-none");
+        } else{
+            $("#passwordAvailableText").removeClass("d-none");
+            $("#passwordDuplicateText").addClass("d-none");
+        }
+    });
+
+    $("#idInput").on("input", function() {
+        $("#idDuplicateText").addClass("d-none");
+        $("#idAvailableText").addClass("d-none");
+    });
+
+    $("#signupBtn").on("click", function (){
+        let id = $("#idInput").val();
+        let password = $("#passwordInput").val();
+        let passwordConfirm = $("#passwordConfirmInput").val();
+        let name = $("#nameInput").val();
+        let email = $("#emailInput").val();
+
+        if(name == ""){
+            alert("이름을 입력하세요");
+            return;
+        }
+
+        if(email == ""){
+            alert("이메일을 입력하세요");
+            return;
+        }
+
+        if(!isValidEmail(email)){
+            alert("이메일 형식이 올바르지 않습니다");
+            return;
+        }
+        if(id == ""){
+            alert("아이디를 입력하세요");
+            return;
+        }
+
+        if(!isIdChecked){
+            alert("중복되었습니다");
+            return;
+        }
+
+        if(isIdDuplicate) {
+            alert("아이디가 중복되었습니다");
+            return ;
+        }
+
+        if(password == ""){
+            alert("비밀번호를 입력하세요");
+            return;
+        }
+        if(passwordConfirm != password){
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+
+
+
+        $.ajax({
+            type:"post"
+            , url:"/user/signup-process"
+            , data: {"signinId": id,"password":password,"name":name,"email":email}
+            ,success: function (response) {
+                if(response.result =="success"){
+                    location.href = "/user/signin";
+                }else {
+                    alert("회원가입 실패");
+                }
+            }
+            , error: function (){
+                alert("회원가입 에러!");
+            }
+        });
+    });
+    $("#duplicateBtn").on("click", function (){
+        let id = $("#idInput").val();
+
+        if(id == ""){
+            alert("아이디를 입력하세요");
+            return;
+        }
+        $.ajax({
+            type: "get"
+            , url: "/user/duplicate-id"
+            ,data: {"signinId":id}
+            ,success: function (response) {
+                isIdChecked  = true;
+                isIdDuplicate = response.isDuplicate;
+                if(response.isDuplicate){
+                    $("#idDuplicateText").removeClass("d-none");
+                    $("#idAvailableText").addClass("d-none");
+                }else {
+                    $("#idAvailableText").removeClass("d-none");
+                    $("#idDuplicateText").addClass("d-none");
+                }
+            }
+            , error: function (){
+                alert("중복확인 에러!");
+            }
+        });
+    });
+
+
+</script>
 </body>
 </html>
