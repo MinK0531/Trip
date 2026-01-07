@@ -1,5 +1,6 @@
 package com.mink.trip.user;
 
+import com.mink.trip.common.dto.ApiResponse;
 import com.mink.trip.user.repository.UserRepository;
 import com.mink.trip.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class UserRestController {
             ,@RequestParam String name
             ,@RequestParam String email)
     {
+
         Map<String,String> resultMap = new HashMap<>();
 
         if(userService.createUser(signinId, password, name, email)){

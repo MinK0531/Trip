@@ -1,5 +1,6 @@
 package com.mink.trip.user.service;
 
+import com.mink.trip.common.SHA256HashingEncoder;
 import com.mink.trip.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,9 @@ public class UserService {
             String name,
             String email){
 
-        int count = userRepository.insertUser(signinId, password, name, email);
+        String encodePassword = SHA256HashingEncoder.encode(password);
+
+        int count = userRepository.insertUser(signinId, encodePassword, name, email);
         if(count == 1){
             return true;
         }else{
