@@ -39,27 +39,30 @@
 
             <div  class="space-y-4">
                 <div>
-                    <label for="userId" class="text-gray-500 text-sm mb-1 uppercase">Id</label>
+                    <label class="text-gray-500 text-sm mb-1 uppercase">Id</label>
                     <input type="text"
-                           id="userId"
-                           name="userId"
+                           id="idInput"
+                           name="idInput"
                            class="w-full h-11 border rounded px-3"
                            placeholder="아이디를 입력하세요"
                            required>
                 </div>
 
                 <div>
-                    <label for="password" class="text-gray-500 text-sm mb-1 uppercase">Password</label>
+                    <label class="text-gray-500 text-sm mb-1 uppercase">Password</label>
                     <input type="password"
-                           id="password"
-                           name="password"
+                           id="passwordInput"
+                           name="passwordInput"
                            class="w-full h-11 border rounded px-3"
                            placeholder="비밀번호를 입력하세요"
                            required>
                 </div>
 
-                <button type="submit"
-                        class="w-full h-12 bg-blue-600 text-white rounded hover:bg-blue-700 mt-4">
+                <button
+                        type="submit"
+                        class=" w-full h-12 bg-blue-600 text-white rounded hover:bg-blue-700 mt-4"
+                        id="signinBtn"
+                >
                     탑승하기
                 </button>
             </div>
@@ -91,5 +94,40 @@
     lucide.createIcons();
 </script>
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+    $("#signinBtn").on("click", function (){
+        let id = $("#idInput").val();
+        let password = $("#passwordInput").val();
+
+        if(id == ""){
+            alert("아이디를 입력하세요");
+            return;
+        }
+
+        if(password == ""){
+            alert("비밀번호를 입력하세요");
+            return;
+        }
+
+        $.ajax({
+            type: "post"
+            ,url:"/user/signin-process"
+            ,data:{"signinId":id, "password":password}
+            ,success: function (response){
+                if(response.result == "success"){
+                    location.href = "/post/home";
+                }else {
+                    alert("아이디와 비밀번호를 확인해 주세요");
+                }
+            }
+            ,error: function (){
+                alert("로그인 에러!");
+            }
+
+        });
+
+    });
+</script>
 </body>
 </html>
