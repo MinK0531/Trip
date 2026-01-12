@@ -1,0 +1,258 @@
+body {
+    margin: 0;
+    background-color: #f0f0f0;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+}
+
+#chartdiv {
+    width: 100%;
+    height: calc(100vh - 64px);
+    margin-top: 64px;
+    cursor: crosshair;
+}
+
+#modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+#modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+}
+
+.close-btn {
+    margin-top: 20px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: none;
+    background: #333;
+    color: white;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.close-btn:hover {
+    background: #555;
+}
+
+
+.main-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    background: white;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 40px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+.header-profile-img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+#chartdiv {
+    width: 100%;
+    height: calc(100vh - 64px);
+    margin-top: 64px;
+    position: relative;
+    background-color: #f8f9fa;
+    overflow: hidden;
+}
+
+.profile-card-container {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    z-index: 50;
+    pointer-events: auto;
+}
+
+.boarding-pass {
+    width: 365px;
+    height: 530px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+}
+
+
+
+.top-stripe {
+    height: 26px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+
+.pass-content {
+    padding: 20px;
+}
+
+.top-section {
+    padding-top: 20px;
+    padding-left: 25px;
+    padding-right: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.profile-pic-wrapper {
+    height: 110px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.profile-pic {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.edit-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.plane-icon {
+    rotate: 90deg;
+    margin-top: 20px;
+    margin-left: 30px;
+    fill: #1A56C5;
+    width: 70px;
+    height: 70px;
+}
+
+.flight-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.airport-code {
+    background: #1A56C5;
+    color: white;
+    padding: 2px 9px;
+    font-weight: bold;
+    font-size: 24px;
+    border-radius: 3px;
+}
+
+.flight-details {
+    display: flex;
+    width: 160px;
+    margin-left: 20px;
+    border-top: 2px solid #1A56C5;
+}
+.detail-item {
+    flex: 1;
+    text-align: center;
+}
+.detail-item .label {
+    font-size: 15px;
+    color: #888;
+    font-weight: bold;
+    border-bottom: 2px solid #1A56C5;
+
+}
+.detail-item .value {
+    font-size: 14px;
+    color: #333;
+    border-bottom: 2px solid #1A56C5;
+
+}
+
+.destination {
+    text-align: center;
+    font-size: 64px;
+    margin: 15px 0 0 0;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+.airline-name {
+    text-align: center;
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 10px;
+}
+.divider {
+    border-top: 1px solid #333;
+    margin: 10px 0;
+}
+
+.bottom-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.comment-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+}
+
+.stat-row {
+    font-size: 20px;
+    margin: 2px 0;
+}
+.stat-label {
+    font-weight: bold;
+}
+.stat-count {
+    color: #888;
+    margin-left: 10px;
+}
+
+.qr-mock {
+    width: 125px;
+    height: 125px;
+    background: #eee;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}

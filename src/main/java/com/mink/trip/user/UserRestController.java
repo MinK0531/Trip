@@ -20,7 +20,8 @@ public class UserRestController {
     private final UserService userService;
 
     @PostMapping("/signup-process")
-    public Map<String,String> signup(
+    public ApiResponse<Void> signup(
+
             @RequestParam String signinId
             ,@RequestParam String password
             ,@RequestParam String name
@@ -28,51 +29,40 @@ public class UserRestController {
             ,@RequestParam String email)
     {
 
-        Map<String,String> resultMap = new HashMap<>();
-
         if(userService.createUser(signinId, password, name, countryCode, email)){
-            resultMap.put("result","success");
+            return ApiResponse.success("회원가입 성공");
         }else{
-            resultMap.put("result","fail");
+            return ApiResponse.fail("회원가입 성공");
         }
-        return resultMap;
 
     }
     @GetMapping("/duplicate-id")
-    public Map<String, Boolean> isDuplicateId(@RequestParam String signinId){
-
-        Map<String,Boolean> resultMap = new HashMap<>();
+    public ApiResponse<Boolean> isDuplicateId(@RequestParam String signinId){
 
         if(userService.isDuplicateId(signinId)){
-            resultMap.put("isDuplicate",true);
+            return ApiResponse.success("중복된 아이디", true);
         }else{
-            resultMap.put("isDuplicate",false);
+            return ApiResponse.success("사용 가능한 아이디", false);
         }
-        return  resultMap;
     }
 
     @PostMapping("/signin-process")
-    public Map<String, String> signin(
+    public ApiResponse<Void> signin(
             @RequestParam String signinId
             , @RequestParam String password
             , HttpServletRequest request){
         User user = userService.getUser(signinId,password);
 
-        Map<String,String> resultMap = new HashMap<>();
-
         if(user != null){
-            resultMap.put("result", "success");
             HttpSession session = request.getSession();
-
 
             session.setAttribute("userId",user.getId());
             session.setAttribute("userSigninId",user.getSigninId());
 
-        }else {
-            resultMap.put("result", "fail");
+            return ApiResponse.success("로그인 성공");
+        }else{
+            return ApiResponse.fail("로그인 실패");
         }
-
-        return resultMap;
     }
 
 }

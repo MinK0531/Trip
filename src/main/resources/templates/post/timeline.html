@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default_head}">
+
+<div layout:fragment="fragment">
+    <main class="max-w-2xl mx-auto px-4 py-20">
+        <div class="space-y-6">
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+
+                <div class="relative h-20 flex items-center px-4 overflow-hidden">
+                    <div class="flex items-center gap-3 z-10">
+                        <div class="w-12 h-12 rounded-full border-2 border-gray-100 overflow-hidden bg-orange-100">
+                            <!--프로필 사진-->
+                        </div>
+                        <div>
+                            <p class="font-bold text-lg leading-tight">나랑 여행가자</p>
+                            <div class="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
+                                <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                                <span>영국</span>
+                                <span class="text-xs">2시간 전</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="absolute right-0 top-0 h-full w-1/2 bg-blue-50 border-l border-b border-blue-200 shadow-sm"
+                         style="clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%);">
+                        <div class="h-full flex flex-col justify-center pl-12 pr-4">
+                            <div class="flex items-start gap-1.5">
+                                <i data-lucide="map-pin" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                                <div>
+                                    <p class="font-bold text-blue-900 text-sm">Tower Bridge Rd</p>
+                                    <p class="text-blue-600 text-xs">런던</p>
+                                    <p class="text-blue-400 text-[10px] font-medium">붐비는, 전통적</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative bg-gray-100 aspect-square">
+                    <img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800" alt="London" class="w-full h-full object-cover">
+                </div>
+
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-4">
+                            <button class="flex items-center gap-2 hover:opacity-70">
+                                <i data-lucide="heart" class="w-6 h-6 text-gray-700"></i>
+                                <span class="text-sm">128</span>
+                            </button>
+                            <button class="flex items-center gap-2 hover:opacity-70">
+                                <i data-lucide="message-circle" class="w-6 h-6 text-gray-700"></i>
+                                <span class="text-sm">24</span>
+                            </button>
+                            <button class="hover:opacity-70">
+                                <i data-lucide="share-2" class="w-6 h-6 text-gray-700"></i>
+                            </button>
+                            <button class="hover:opacity-70">
+                                <i data-lucide="send" class="w-6 h-6 text-gray-700"></i>
+                            </button>
+                        </div>
+                        <button class="hover:opacity-70">
+                            <i data-lucide="bookmark" class="w-6 h-6 text-gray-700"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="text-sm">
+                            <span class="font-semibold">Traveler_01</span>
+                            베네치아의 오후는 정말 낭만적이에요. 곤돌라를 타며 바라보는 풍경이 잊혀지지 않네요! 🚣‍♂️
+                        </p>
+
+                        <div class="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2 w-fit">
+                            <i data-lucide="music" class="w-4 h-4"></i>
+                            <span>Lauv - Paris in the Rain</span>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-gray-100 space-y-3">
+                        <div class="flex items-start gap-2">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-600">여</div>
+                            <div class="flex-1">
+                                <div class="bg-gray-100 rounded-lg px-3 py-2">
+                                    <p class="text-sm font-semibold">여행친구</p>
+                                    <p class="text-sm">너무 멋져요! 저도 가고 싶어요 😍</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-2">
+                            <input type="text" placeholder="댓글을 입력하세요..." class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <button class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">게시</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

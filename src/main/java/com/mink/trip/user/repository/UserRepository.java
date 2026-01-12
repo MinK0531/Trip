@@ -15,5 +15,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     public User findBySigninIdAndPassword(String signinId, String password);
 
-    public User findById(long id);
 }
