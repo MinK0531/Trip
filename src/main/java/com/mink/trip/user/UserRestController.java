@@ -58,6 +58,7 @@ public class UserRestController {
 
             session.setAttribute("userId",user.getId());
             session.setAttribute("userSigninId",user.getSigninId());
+            session.setAttribute("userCountry", user.getCountryCode());
 
             return ApiResponse.success("로그인 성공");
         }else{

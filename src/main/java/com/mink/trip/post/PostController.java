@@ -12,8 +12,8 @@ public class PostController {
     public String timeline(){
         return "post/timeline";
     }
-    @GetMapping("/map")
+    @GetMapping("/create")
     public String map(){
-        return "mypage/map";
+        return "create";
     }
 }

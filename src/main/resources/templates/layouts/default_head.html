@@ -9,8 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHECK-IN</title>
     <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
 </head>
 
 <body class="bg-gray-50">
@@ -24,10 +26,10 @@
             </div>
 
             <div class="flex items-center gap-1">
-                <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-blue-600 bg-blue-50">
+                <a href="/post/timeline" class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
                     <i data-lucide="home" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">홈</span>
-                </button>
+                </a>
                 <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
                     <i data-lucide="search" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">검색</span>
@@ -40,26 +42,34 @@
                     <i data-lucide="bell" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">알림</span>
                 </button>
-                <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <button data-toggle="modal" data-target="#exampleModal" class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
                     <i data-lucide="plus-square" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">만들기</span>
                 </button>
-                <div class="ml-4 flex items-center gap-3">
+
+                <a href="/mypage/map" class="ml-4 flex items-center gap-3">
                     <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white border-2 border-blue-600 cursor-pointer">
-                        <!--프로필 사진-->
+                        <img src="/img/profile.png" alt="Profile" class="profile-pic">
                     </div>
-                </div>
+                </a>
+
             </div>
         </div>
     </div>
 </nav>
 
 <th:block layout:fragment="fragment"></th:block>
-
+<th:block th:replace="post/create :: createPopup"></th:block>
+<th:block th:replace="post/create :: createPopupScript"></th:block>
 <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <script>lucide.createIcons();</script>
 <th:block layout:fragment="script"></th:block>
 </body>

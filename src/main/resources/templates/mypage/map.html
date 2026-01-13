@@ -16,7 +16,7 @@
                 <div class="pass-content">
                     <div class="top-section">
                         <div class="profile-pic-wrapper ">
-                            <img src="https://i.ibb.co/76ab72/image.png" alt="Profile" class="profile-pic">
+                            <img src="/img/profile.png" alt="Profile" class="profile-pic">
                         </div>
 
                         <div>
@@ -47,7 +47,7 @@
 
 
                     <h1 class="destination">SEOUL</h1>
-                    <p class="airline-name">항공사 이름 : 사용자 지정</p>
+                    <p class="airline-name">항공사 이름 :<span th:text="${session.userSigninId}" class="font-weight-bold"></span></p>
 
                     <div class="divider"></div>
 
