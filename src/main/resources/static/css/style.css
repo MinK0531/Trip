@@ -256,3 +256,18 @@ html {
     border-radius: 8px;
     border: 1px solid #ddd;
 }
+
+/*create 팝업*/
+
+.ticket-modal-size {
+    max-width: 1150px;
+    width: 1150px;
+}
+
+.ticket-modal-size .modal-content {
+    height: 512px;
+}
+
+.ticket-modal-size .modal-body {
+    overflow-y: auto; /* 내용 많을 때 스크롤 */
+}
