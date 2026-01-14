@@ -258,16 +258,65 @@ html {
 }
 
 /*create 팝업*/
-
-.ticket-modal-size {
-    max-width: 1150px;
-    width: 1150px;
+/* 1. 공통 및 선택 모달 스타일 */
+.create-choice-modal .modal-dialog {
+    width: 300px !important;
+    max-width: 300px !important;
+    margin: auto;
 }
-
-.ticket-modal-size .modal-content {
-    height: 512px;
+.create-choice-modal .modal-content {
+    width: 300px;
+    height: 160px;
+    border-radius: 20px;
+    padding: 10px 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
-
-.ticket-modal-size .modal-body {
-    overflow-y: auto; /* 내용 많을 때 스크롤 */
+.btn-choice {
+    border: 1px solid #ced4da;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 12px 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 10px;
+    display: block;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
 }
+.btn-choice:hover { background-color: #f8f9fa; color: #000; text-decoration: none; }
+.btn-choice:last-child { margin-bottom: 0; }
+
+/* 2. 게시물 만들기 (티켓형) 스타일 */
+.ticket-modal .modal-dialog { max-width: 1000px; }
+.ticket-modal .modal-content { border-radius: 30px; border: none; overflow: hidden; }
+.ticket-header-bg {
+    background-color: #4A90E2;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    color: white;
+}
+.ticket-container { display: flex; padding: 30px; gap: 30px; }
+.ticket-left {
+    flex: 1; background-color: #eeeeee; border: 1px solid #000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 380px;
+}
+.ticket-center { flex: 1.5; }
+.ticket-right { flex: 0.8; border-left: 2px dashed #ddd; padding-left: 30px; }
+.ticket-input { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 15px; background: #fff; }
+.ticket-label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; }
+.btn-upload-blue { background-color: #1A73E8; color: white; width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; }
+
+/* 3. 위시리스트 모달 스타일 */
+.wish-modal .modal-content { border-radius: 15px; padding: 25px; border: none; }
+.wish-input { width: 100%; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 12px 15px; margin-bottom: 15px; }
+.wish-date-container { display: flex; gap: 10px; margin-bottom: 15px; }
+.wish-footer { display: flex; justify-content: flex-end; gap: 10px; }
