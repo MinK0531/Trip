@@ -258,7 +258,15 @@ html {
 }
 
 /*create 팝업*/
-/* 1. 공통 및 선택 모달 스타일 */
+.top-stripe-head {
+    width: 370px;
+    height: 52px;
+}
+
+.top-stripe-head img {
+    width: 100%;
+    object-fit: cover;
+}
 .create-choice-modal .modal-dialog {
     width: 300px !important;
     max-width: 300px !important;
@@ -293,28 +301,187 @@ html {
 .btn-choice:hover { background-color: #f8f9fa; color: #000; text-decoration: none; }
 .btn-choice:last-child { margin-bottom: 0; }
 
-/* 2. 게시물 만들기 (티켓형) 스타일 */
-.ticket-modal .modal-dialog { max-width: 1000px; }
-.ticket-modal .modal-content { border-radius: 30px; border: none; overflow: hidden; }
-.ticket-header-bg {
-    background-color: #4A90E2;
-    height: 80px;
+
+.ticket-modal .modal-dialog {
+    max-width: 1150px;
+    background: transparent;
+    border: none;
+}
+
+.ticket-wrapper::before, .ticket-wrapper::after,
+.ticket-main::before, .ticket-main::after,
+.ticket-stub::before, .ticket-stub::after {
+    content: '';
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    z-index: 10;
+    box-sizing: border-box;
+    background-color: #4778D1;
+}
+
+.ticket-wrapper {
+    display: flex;
+    background: white;
+    border: 30px solid #4778D1;
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3));
+    width: 100%;
+}
+
+.ticket-main {
+    flex: 3;
+    background: white;
+    border-right: 4px dashed #4778D1;
+    position: relative;
+}
+
+.ticket-stub {
+    flex: 1;
+    padding: 15px;
+    background-color: #fcfcfc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.ticket-wrapper::before {
+    top: -30px;
+    left: -30px;
+}
+.ticket-wrapper::after {
+    bottom: -30px;
+    left: -30px;
+}
+.ticket-stub::before {
+    top: -30px;
+    right: -30px;
+}
+.ticket-stub::after {
+    bottom: -30px;
+    right: -30px;
+}
+
+
+.ticket-main::before {
+    top: -30px;
+    right: -32px;
+}
+
+.ticket-main::after {
+    bottom: -30px;
+    right: -32px;
+}
+
+.ticket-container {
+    display: flex;
+    gap: 25px;
+}
+
+.ticket-left-upload {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 350px;
+    position: relative;
+}
+
+.new-post-header {
     display: flex;
     align-items: center;
-    padding: 0 40px;
-    color: white;
+    margin-bottom: 15px;
+    padding-left: 5px;
+    color: #1A73E8;
 }
-.ticket-container { display: flex; padding: 30px; gap: 30px; }
-.ticket-left {
-    flex: 1; background-color: #eeeeee; border: 1px solid #000;
-    display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 380px;
-}
-.ticket-center { flex: 1.5; }
-.ticket-right { flex: 0.8; border-left: 2px dashed #ddd; padding-left: 30px; }
-.ticket-input { width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 15px; background: #fff; }
-.ticket-label { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; }
-.btn-upload-blue { background-color: #1A73E8; color: white; width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; }
 
+.new-post-text {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    font-size: 28px;
+    font-weight: 500;
+    color: #1A73E8;
+}
+
+.upload-main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #eee;
+    border: 1px solid #000;
+    height: 100%;
+    width: 100%;
+}
+
+.upload-main-content .btn-primary {
+    background-color: #1A73E8;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 13px;
+}
+
+.ticket-center-input {
+    flex: 1.5;
+}
+
+.ticket-label {
+    display: block;
+    font-weight: 800;
+    color: #4778D1;
+    margin-bottom: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ticket-input {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    font-size: 11px;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+
+.ticket-input:focus {
+    outline: none;
+    border-color: #4778D1;
+}
+
+.stub-title {
+    font-weight: 850;
+    font-size: 11px;
+    color: #000000;
+    text-align: left;
+    margin-bottom: 20px;
+    padding-bottom: 5px;
+}
+
+.btn-upload-blue {
+    background-color: #4778D1;
+    color: white;
+    width: 100%;
+    padding: 15px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-upload-blue:hover {
+    background-color: #2e5396;
+    transform: translateY(-2px);
+}
 /* 3. 위시리스트 모달 스타일 */
 .wish-modal .modal-content { border-radius: 15px; padding: 25px; border: none; }
 .wish-input { width: 100%; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 10px; padding: 12px 15px; margin-bottom: 15px; }
