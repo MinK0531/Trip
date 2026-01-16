@@ -162,6 +162,15 @@ html {
     width: 70px;
     height: 70px;
 }
+.ticket-plane-icon {
+    rotate: 45deg;
+    margin-top: 20px;
+    margin-left: 30px;
+    fill: #1A56C5;
+    width: 47px;
+    height: 47px;
+}
+
 
 .flight-info-row {
     display: flex;
@@ -258,15 +267,7 @@ html {
 }
 
 /*create 팝업*/
-.top-stripe-head {
-    width: 370px;
-    height: 52px;
-}
 
-.top-stripe-head img {
-    width: 100%;
-    object-fit: cover;
-}
 .create-choice-modal .modal-dialog {
     width: 300px !important;
     max-width: 300px !important;
@@ -301,7 +302,14 @@ html {
 .btn-choice:hover { background-color: #f8f9fa; color: #000; text-decoration: none; }
 .btn-choice:last-child { margin-bottom: 0; }
 
+.top-stripe-head {
+    width: 370px;
+}
 
+.top-stripe-head img {
+    width: 100%;
+    object-fit: cover;
+}
 .ticket-modal .modal-dialog {
     max-width: 1150px;
     background: transparent;
@@ -342,7 +350,7 @@ html {
 .ticket-stub {
     flex: 1;
     padding: 15px;
-    background-color: #fcfcfc;
+    background-color: #ffffff;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -392,17 +400,18 @@ html {
 .new-post-header {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
-    padding-left: 5px;
-    color: #1A73E8;
+    margin-bottom: 10px;
+    margin-right: 5px;
+    color: #4778D1;
 }
 
 .new-post-text {
-    font-family: 'Georgia', serif;
+    font-family: 'Georgia', 'Times New Roman', serif; /* 필기체 느낌 */
     font-style: italic;
     font-size: 28px;
     font-weight: 500;
-    color: #1A73E8;
+    color: #000000;
+    line-height: 1;
 }
 
 .upload-main-content {
@@ -416,7 +425,11 @@ html {
     height: 100%;
     width: 100%;
 }
-
+.image-upload{
+    width: 50px;
+    height: 50px;
+    color: #ddd;
+}
 .upload-main-content .btn-primary {
     background-color: #1A73E8;
     border: none;
@@ -431,8 +444,8 @@ html {
 
 .ticket-label {
     display: block;
-    font-weight: 800;
-    color: #4778D1;
+    font-weight: 600;
+    color: #000000;
     margin-bottom: 6px;
     font-size: 11px;
     text-transform: uppercase;
@@ -452,7 +465,7 @@ html {
 
 .ticket-input:focus {
     outline: none;
-    border-color: #4778D1;
+    border-color: #000000;
 }
 
 .stub-title {
