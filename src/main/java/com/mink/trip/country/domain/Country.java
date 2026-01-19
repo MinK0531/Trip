@@ -16,6 +16,8 @@ public class Country {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private String countryNameEn;
     private String countryName;
     private String countryCode;
+
 }

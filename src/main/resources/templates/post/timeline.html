@@ -8,7 +8,12 @@
     <main class="max-w-2xl mx-auto px-4 py-20">
         <div class="space-y-6">
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+            <div th:if="${#lists.isEmpty(postList)}" class="text-center py-20 text-gray-500">
+                <i data-lucide="camera-off" class="w-12 h-12 mx-auto mb-4"></i>
+                <p>아직 게시물이 없습니다. 첫 여행 기록을 남겨보세요!</p>
+            </div>
+
+            <div  th:each="post : ${postList}" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
 
                 <div class="relative h-20 flex items-center px-4 overflow-hidden">
                     <div class="flex items-center gap-3 z-10">
@@ -16,32 +21,48 @@
                             <!--프로필 사진-->
                         </div>
                         <div>
-                            <p class="font-bold text-lg leading-tight">나랑 여행가자</p>
+                            <p class="font-bold text-lg leading-tight" th:text="${post.userId}">나랑 여행가자</p>
                             <div class="flex items-center gap-2 text-sm text-gray-500 mt-0.5">
                                 <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-                                <span>영국</span>
-                                <span class="text-xs">2시간 전</span>
+                                <span  th:text="${post.countryId}">영국</span>
+                                <span class="text-xs" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">2시간 전</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="absolute right-0 top-0 h-full w-1/2 bg-blue-50 border-l border-b border-blue-200 shadow-sm"
+                    <div th:if="${(post.placeName != null and post.placeName != '') or (post.cityName != null and post.cityName > 0) or (post.atmosphere != null and post.atmosphere != '')}"
+                            class="absolute right-0 top-0 h-full w-1/2 bg-blue-50 border-l border-b border-blue-200 shadow-sm"
                          style="clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%);">
                         <div class="h-full flex flex-col justify-center pl-12 pr-4">
                             <div class="flex items-start gap-1.5">
                                 <i data-lucide="map-pin" class="w-5 h-5 text-blue-600 mt-0.5"></i>
-                                <div>
-                                    <p class="font-bold text-blue-900 text-sm">Tower Bridge Rd</p>
-                                    <p class="text-blue-600 text-xs">런던</p>
-                                    <p class="text-blue-400 text-[10px] font-medium">붐비는, 전통적</p>
+                                <div class="overflow-hidden">
+                                    <p th:if="${post.placeName != null and post.placeName != ''}" th:text="${post.placeName}"
+                                       class="font-bold text-blue-900 text-sm">Tower Bridge Rd</p>
+                                    <p th:if="${post.cityName != null and post.cityName != ''}" th:text="${post.cityName}"
+                                       class="text-blue-600 text-xs">런던</p>
+                                    <p th:if="${post.atmosphere != null and post.atmosphere != ''}" th:text="${post.atmosphere}"
+                                       class="text-blue-400 text-[10px] font-medium">붐비는, 전통적</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="relative bg-gray-100 aspect-square">
-                    <img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800" alt="London" class="w-full h-full object-cover">
+                <div class="relative bg-gray-50 aspect-square overflow-hidden group">
+                    <div class="flex h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide" id="image-slider">
+                        <div th:each="img : ${post.images}" class="flex-none w-full h-full snap-center">
+                            <img th:src="${img.imagePath}" class="w-full h-full object-cover" alt="post image">
+                        </div>
+                        <div th:if="${#lists.isEmpty(post.images)}" class="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                            <i data-lucide="image-off" class="w-16 h-16 mb-2"></i>
+                            <p class="text-sm">이미지가 없습니다</p>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.size(post.images) > 1}"
+                         class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-[10px] px-2 py-1 rounded-full backdrop-blur-sm">
+                        <span class="font-medium">1</span> / <span th:text="${#lists.size(post.images)}">3</span>
+                    </div>
                 </div>
 
                 <div class="p-4">
@@ -49,11 +70,11 @@
                         <div class="flex items-center gap-4">
                             <button class="flex items-center gap-2 hover:opacity-70">
                                 <i data-lucide="heart" class="w-6 h-6 text-gray-700"></i>
-                                <span class="text-sm">128</span>
+                                <span class="text-sm"></span>
                             </button>
                             <button class="flex items-center gap-2 hover:opacity-70">
                                 <i data-lucide="message-circle" class="w-6 h-6 text-gray-700"></i>
-                                <span class="text-sm">24</span>
+                                <span class="text-sm"></span>
                             </button>
                             <button class="hover:opacity-70">
                                 <i data-lucide="share-2" class="w-6 h-6 text-gray-700"></i>
@@ -68,14 +89,17 @@
                     </div>
 
                     <div class="space-y-3">
-                        <p class="text-sm">
-                            <span class="font-semibold">Traveler_01</span>
-                            베네치아의 오후는 정말 낭만적이에요. 곤돌라를 타며 바라보는 풍경이 잊혀지지 않네요! 🚣‍♂️
-                        </p>
+                        <div class="flex items-start gap-2 text-sm leading-relaxed text-gray-800">
+                            <span class="font-bold whitespace-nowrap" th:text="${post.userId}">User</span>
+                            <span class="break-all" th:text="${post.contents}">본문 내용입니다.</span>
+                        </div>
 
-                        <div class="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2 w-fit">
-                            <i data-lucide="music" class="w-4 h-4"></i>
-                            <span>Lauv - Paris in the Rain</span>
+                        <div th:if="${post.musicUrl != null and post.musicUrl != ''}"
+                             class="flex items-center gap-2.5 text-xs font-medium text-blue-600 bg-blue-50 px-3 py-2.5 rounded-lg w-full mt-3 border border-blue-100/50">
+
+                            <i data-lucide="music" class="w-3.5 h-3.5 animate-pulse flex-shrink-0"></i>
+
+                            <span th:text="${post.musicUrl}" class="truncate flex-1">Recommended Track</span>
                         </div>
 
                     </div>

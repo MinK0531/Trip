@@ -1,6 +1,6 @@
 package com.mink.trip.country;
 
-import com.mink.trip.country.domain.Country;
+import com.mink.trip.country.dto.CountryDetail;
 import com.mink.trip.country.service.CountryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,10 @@ public class CountryRestController {
     private final CountryService countryService;
 
     @GetMapping("/list")
-    public List<Country> getCountryList() {
-        return countryService.getCountryList();
+    public List<CountryDetail> getCountryList() {
+        return countryService.getCountryList().stream()
+                .map(c -> new CountryDetail(c.getId(), c.getCountryName(), c.getCountryNameEn(), c.getCountryCode()))
+                .toList();
     }
+
 }

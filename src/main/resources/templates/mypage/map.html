@@ -31,7 +31,7 @@
                     </div>
 
                     <div class="flight-info-row">
-                        <div class="airport-code">KOR</div>
+                        <div class="airport-code"><span th:text="${session.userCountry}" class="font-weight-bold"></span></div>
                         <div class="flight-details">
                             <div class="detail-item ">
                                 <div class="label">FLIGHT</div>
@@ -46,7 +46,9 @@
 
 
 
-                    <h1 class="destination">SEOUL</h1>
+                    <h1 class="departure"
+                        th:text="${session.userRegion != null ? session.userRegion : 'WHERE TO NEXT?'}">
+                    </h1>
                     <p class="airline-name">항공사 이름 :<span th:text="${session.userSigninId}" class="font-weight-bold"></span></p>
 
                     <div class="divider"></div>

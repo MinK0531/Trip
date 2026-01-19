@@ -1,0 +1,65 @@
+<th:block th:fragment="createPopup">
+
+    <div class="modal fade create-choice-modal" id="createChoiceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="btn-choice" onclick="openPostModal()">게시물 만들기</button>
+                    <button type="button" class="btn-choice" onclick="openWishModal()">위시리스트 만들기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade ticket-modal" id="postCreateModal" tabindex="-1" aria-hidden="true">
+        <th:block th:replace="post/write :: PostPopup"></th:block>
+    </div>
+
+    <div class="modal fade wish-modal" id="wishCreateModal" tabindex="-1" aria-hidden="true">
+        <th:block th:replace="wishlist/write :: WishlistPopup"></th:block>
+    </div>
+
+</th:block>
+
+<th:block th:fragment="createPopupScript">
+    <script>
+        function openPostModal() {
+            $('#createChoiceModal').modal('hide');
+
+            setTimeout(function () {
+                $('#postCreateModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            }, 300);
+        }
+
+        function openWishModal() {
+            $('#createChoiceModal').modal('hide');
+
+            setTimeout(function () {
+                $('#wishCreateModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
+            }, 300);
+        }
+
+        // 파일명 표시 (이벤트 위임)
+        $(document).on('change', '#postImageFile', function () {
+            $('#postFileName').text(
+                this.files[0] ? this.files[0].name : ''
+            );
+        });
+
+        $('#postCreateModal, #wishCreateModal').on('shown.bs.modal', function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+    <th:block th:replace="post/write :: PostPopupScript"></th:block>
+    <th:block th:replace="wishlist/write :: WishlistPopupScript"></th:block>
+</th:block>
+
+

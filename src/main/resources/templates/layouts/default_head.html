@@ -72,15 +72,14 @@
 <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>lucide.createIcons();</script>
 <th:block layout:fragment="fragment"></th:block>
-<th:block th:replace="post/create :: createPopup"></th:block>
-<th:block th:replace="post/create :: createPopupScript"></th:block>
+<th:block th:replace="layouts/create :: createPopup"></th:block>
+<th:block th:replace="layouts/create :: createPopupScript"></th:block>
 <th:block layout:fragment="script"></th:block>
 </body>
 </html>

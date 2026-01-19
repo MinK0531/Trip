@@ -1,0 +1,25 @@
+<th:block th:fragment="WishlistPopup">
+
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <h5 class="fw-bold mb-4">위시리스트 추가</h5>
+            <label class="ticket-label">여행지</label><input type="text" class="wish-input">
+            <label class="ticket-label">국가</label><input type="text" class="wish-input" placeholder="국가를 선택하세요">
+            <label class="ticket-label">희망 시기</label><input type="text" class="wish-input" placeholder="언제 가고 싶으신가요?">
+            <label class="ticket-label">희망 날짜 범위 선택 (선택)</label>
+            <div class="wish-date-container">
+                <input type="date" class="wish-input">
+                <input type="date" class="wish-input">
+            </div>
+            <label class="ticket-label">메모 (선택)</label>
+            <textarea class="wish-input" rows="3" placeholder="이 여행에 대한 메모를 적어 주세요"></textarea>
+            <div class="wish-footer">
+                <button type="button" class="btn btn-light border" data-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary px-4">추가하기</button>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+<th:block th:fragment="WishlistPopupScript">
+</th:block>

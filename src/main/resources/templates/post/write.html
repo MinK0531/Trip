@@ -1,0 +1,292 @@
+<th:block th:fragment="PostPopup">
+
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 bg-transparent">
+            <div class="ticket-wrapper">
+                <div class="ticket-main mr-5">
+                    <div class="ticket-container" >
+                        <div class="ticket-left-upload ml-4 mb-5">
+                            <div class="new-post-header">
+                                <div class="ticket-plane-icon">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                                    </svg>
+                                </div>
+                                <span class="new-post-text mt-3">new post</span>
+                            </div>
+
+                            <div class="upload-main-content text-center" id="drop-zone">
+                                <input type="file" id="image-input" class="d-none" multiple accept="image/*">
+
+                                <div id="upload-placeholder" class="text-center">
+                                    <i data-lucide="image" class="mb-2 image-upload-icon" style="cursor:pointer"></i>
+                                    <p class="upload-text">사진을 여기에 끌어다 놓으세요</p>
+                                    <button type="button" class="btn btn-instagram-style" id="selectImgeBtn">
+                                        컴퓨터에서 선택
+                                    </button>
+                                </div>
+
+                                <div id="image-preview-container"></div>
+                                <div id="slider-dots" class="slider-dots"></div>
+                            </div>
+                        </div>
+                        <div class="ticket-center-input mr-4">
+                            <div class="top-stripe-head">
+                                <img src="/img/top-stripe.png" alt="top-stripe">
+                            </div>
+                            <label class="ticket-label mt-4">내용</label>
+                            <textarea id="contents" class="ticket-input" rows="4" placeholder="여행의 기록을 남겨보세요 (0/1000)"></textarea>
+
+                            <label class="ticket-label">여행한 나라</label>
+                            <select id="country" class="ticket-input">
+                                <option value="" disabled selected>나라를 선택하세요</option>
+                            </select>
+
+                            <label class="ticket-label">음악 (선택)</label>
+                            <input type="text" id="music" class="ticket-input" placeholder="추억의 음악을 찾아보세요">
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-stub mr-3">
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="close-ticket" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <p class="stub-title">추천하는 장소 (선택)</p>
+                    <label class="ticket-label">여행한 도시</label>
+                    <select id="city" class="ticket-input" disabled>
+                        <option value="" disabled selected>도시명</option>
+                    </select>
+                    <label class="ticket-label">가게 이름</label>
+                    <input type="text" id="place-name"  class="ticket-input" placeholder="맛집/명소">
+                    <label class="ticket-label">분위기</label>
+                    <input type="text" id="place-mood" class="ticket-input" placeholder="평화로운, 힙한 등">
+
+                    <button class="btn-upload-blue">POST NOW</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</th:block>
+<th:block th:fragment="PostPopupScript">
+    <script>
+        const countrySelect = document.getElementById('country');
+        const citySelect = document.getElementById('city');
+
+        fetch('/country/list')
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.countryNameEn;
+                    option.textContent = c.countryName;
+                    option.setAttribute('data-id', c.id);
+                    countrySelect.appendChild(option);
+                });
+            });
+
+        countrySelect.addEventListener('change', () => {
+            const selectedCountry = countrySelect.value;
+
+            citySelect.innerHTML = '<option value="" disabled selected>도시명</option>';
+            citySelect.disabled = true;
+
+            fetch('https://countriesnow.space/api/v0.1/countries/cities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ country: selectedCountry })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.data) return;
+
+                    data.data.sort().forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city;
+                        option.textContent = city;
+                        citySelect.appendChild(option);
+                    });
+
+                    citySelect.disabled = false;
+                })
+                .catch(err => console.error(err));
+        });
+    </script>
+
+
+
+    <script>
+        const selectedFiles = [];
+        const $fileInput = $("#image-input");
+        const $previewContainer = $("#image-preview-container");
+        const $dotsContainer = $("#slider-dots");
+        const $placeholder = $("#upload-placeholder");
+        const $dropZone = $("#drop-zone");
+
+            $(document).on("click", "#selectImgeBtn, .image-upload-icon", function () {
+                $fileInput.click();
+            });
+
+            function handleFiles(files) {
+                const fileArray = Array.from(files);
+
+                fileArray.forEach(file => {
+                    if (!file.type.startsWith("image/")) {
+                        alert("이미지 파일만 업로드 가능합니다.");
+                        return;
+                    }
+
+                    selectedFiles.push(file);
+
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const previewHtml = `
+                            <div class="preview-item">
+                                <img src="${ev.target.result}">
+                                <button type="button" class="remove-img-btn">&times;</button>
+                            </div>
+                        `;
+                        $previewContainer.append(previewHtml);
+                        $dotsContainer.append('<div class="dot"></div>');
+
+                        updateUI();
+                        scrollToImage(selectedFiles.length - 1);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function scrollToImage(index) {
+                const width = $previewContainer.width();
+                $previewContainer.stop().animate({
+                    scrollLeft: width * index
+                }, 400);
+            }
+
+            $(document).on('keydown', function(e) {
+                if (selectedFiles.length > 0) {
+                    const width = $previewContainer.width();
+                    const currentScroll = $previewContainer.scrollLeft();
+                    let currentIndex = Math.round(currentScroll / width);
+
+                    if (e.keyCode === 37) {
+                        if (currentIndex > 0) scrollToImage(currentIndex - 1);
+                    } else if (e.keyCode === 39) {
+                        if (currentIndex < selectedFiles.length - 1) scrollToImage(currentIndex + 1);
+                    }
+                }
+            });
+
+            $(document).on("click", ".remove-img-btn", function() {
+                const $item = $(this).closest('.preview-item');
+                const index = $(".preview-item").index($item);
+
+                selectedFiles.splice(index, 1);
+                $item.remove();
+                $('.dot').eq(index).remove();
+
+                updateUI();
+            });
+
+            function updateUI() {
+                if (selectedFiles.length > 0) {
+                    $placeholder.hide();
+                    $previewContainer.css('display', 'flex');
+                    $dotsContainer.show();
+                    updateActiveDot();
+                } else {
+                    $placeholder.show();
+                    $previewContainer.hide();
+                    $dotsContainer.hide().empty();
+                    $fileInput.val("");
+                }
+            }
+
+            $previewContainer.on('scroll', function() {
+                updateActiveDot();
+            });
+
+            function updateActiveDot() {
+                const width = $previewContainer.width();
+                const index = Math.round($previewContainer.scrollLeft() / width);
+                $('.dot').removeClass('active').eq(index).addClass('active');
+            }
+
+            $fileInput.on("change", function(e) {
+                handleFiles(e.target.files);
+            });
+
+            $dropZone.on('dragover', (e) => {
+                e.preventDefault();
+                $dropZone.addClass('drag-active');
+            });
+
+            $dropZone.on('dragleave', () => $dropZone.removeClass('drag-active'));
+
+            $dropZone.on('drop', function(e) {
+                e.preventDefault();
+                $dropZone.removeClass('drag-active');
+                handleFiles(e.originalEvent.dataTransfer.files);
+            });
+
+        $(".btn-upload-blue").on("click", function() {
+            const contents = $("#contents").val().trim();
+            const countryNameEn = $("#country").val();
+            const countryId = $("#country option:selected").data('id');
+            const cityName = $("#city").val();
+            const placeName = $("#place-name").val().trim();
+            const musicUrl = $("#music").val().trim();
+            const atmosphere = $("#place-mood").val().trim();
+
+            if (selectedFiles.length === 0) {
+                alert("최소 한 장의 사진을 등록해주세요.");
+                return;
+            }
+            if (!contents) {
+                alert("여행 기록 내용을 입력하세요.");
+                $("#contents").focus();
+                return;
+            }
+            if (!countryNameEn) {
+                alert("나라를 선택하세요.");
+                $("#country").focus();
+                return;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append("images", file);
+            });
+            formData.append("contents", contents);
+            formData.append("countryId", countryId);
+            formData.append("countryNameEn", countryNameEn);
+            formData.append("cityName", cityName || "");
+            formData.append("musicUrl", musicUrl || "");
+            formData.append("atmosphere", atmosphere || "");
+            formData.append("placeName", placeName || "");
+            formData.append("latitude", 0.0);
+            formData.append("longitude", 0.0);
+
+            $.ajax({
+                type: "POST",
+                url: "/post/write",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.result === "success") {
+                        location.reload();
+                    } else {
+                        alert("작성 실패!");
+                    }
+                },
+                error: function () {
+                    alert("작성 에러!");
+                }
+            });
+        });
+
+    </script>
+</th:block>

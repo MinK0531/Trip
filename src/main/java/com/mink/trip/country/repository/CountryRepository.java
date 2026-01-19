@@ -10,4 +10,5 @@ import java.util.List;
 public interface CountryRepository extends JpaRepository<Country, Long> {
 
     public List<Country> findAllByOrderByCountryNameAsc();
+
 }
