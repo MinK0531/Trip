@@ -25,12 +25,12 @@ public class PostController {
 
         List<Post> postList = postService.getPostList();
         model.addAttribute("postList", postList);
-        return "post/timeline";
+        return "/post/timeline";
     }
 
 
     @GetMapping("/create")
     public String map(){
-        return "layouts/create";
+        return "/layouts/create";
     }
 }

@@ -32,18 +32,18 @@
                     <i data-lucide="home" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">홈</span>
                 </a>
-                <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <a href="/search/timeline" class="nav-item flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
                     <i data-lucide="search" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">검색</span>
-                </button>
+                </a>
                 <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
                     <i data-lucide="message-circle" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">메시지</span>
                 </button>
-                <button class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                <a href="/alarm/timeline" class="nav-item flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">
                     <i data-lucide="bell" class="w-6 h-6"></i>
-                    <span class="text-xs hidden md:block">알림</span>
-                </button>
+                    <span class="text-xs hidden md:block">알람</span>
+                </a>
                 <button data-toggle="modal" data-target="#createChoiceModal" class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100">
                     <i data-lucide="plus-square" class="w-6 h-6"></i>
                     <span class="text-xs hidden md:block">만들기</span>
@@ -66,7 +66,32 @@
         </div>
     </div>
 </nav>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        lucide.createIcons();
 
+        const currentPath = window.location.pathname;
+
+        const navItems = document.querySelectorAll('.nav-item');
+
+        navItems.forEach(item => {
+            const href = item.getAttribute('href');
+
+            if (href && currentPath === href) {
+                item.classList.remove('text-gray-600');
+                item.classList.add('text-blue-600', 'bg-blue-50');
+
+                const icon = item.querySelector('svg');
+                if (icon) {
+                    icon.style.fill = 'currentColor';
+                    icon.style.fillOpacity = '0.2';
+                }
+            }
+        });
+    });
+</script>
+
+</script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
 <script src="https://cdn.amcharts.com/lib/5/map.js"></script>

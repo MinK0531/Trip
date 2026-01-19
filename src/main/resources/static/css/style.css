@@ -627,3 +627,137 @@ html {
     justify-content: flex-end;
     gap: 10px;
 }
+
+
+/*search*/
+
+main {
+    font-family: 'Noto Sans KR', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 15px);
+    margin-top: 15px;
+}
+
+.search-window {
+    width: 90%;
+    max-width: 850px;
+    height: 800px;
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+}
+
+.search-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 30px;
+}
+
+.search-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #000;
+    margin-right: 15px;
+    letter-spacing: -1px;
+}
+
+.input-wrapper {
+    position: relative;
+    flex-grow: 1;
+}
+
+.search-input {
+    width: 100%;
+    height: 45px;
+    border-radius: 25px; /* 캡슐 모양 */
+    border: 1px solid #ddd;
+    padding: 0 20px 0 45px;
+    font-size: 0.95rem;
+    background-color: #fff;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #aaa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.search-input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    width: 20px;
+    height: 20px;
+}
+
+.tab-bar-container {
+    padding: 20px 30px;
+}
+
+.custom-tab-group {
+    display: flex;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    padding: 5px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.tab-item {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 25px;
+    color: #000;
+    transition: 0.2s;
+}
+
+.tab-item.active {
+    background-color: #f8f9fa; /* 선택된 느낌 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* 결과 영역 */
+
+
+.empty-text {
+    color: #d1d1d1;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* 사용자/게시물 결과 스타일 */
+.result-item {
+    width: 100%;
+    color: #333;
+    text-align: left;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #f5f5f5;
+    padding-bottom: 10px;
+}
+.no-picture{
+    padding-top: 450px;
+}

@@ -11,6 +11,6 @@ public class MyPageController {
     @GetMapping("/map")
 
     public String map(){
-        return "mypage/map";
+        return "/mypage/map";
     }
 }

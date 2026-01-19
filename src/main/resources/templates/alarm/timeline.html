@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default_head}">
+<div layout:fragment="fragment">
+    <main class="pt-20 pb-10 bg-gray-50">
+        <div id="app" class="max-w-3xl mx-auto px-4" v-cloak>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+
+                <div class="p-4 border-b border-gray-200 bg-white">
+                    <h2 class="text-xl font-bold">알림</h2>
+                </div>
+
+                <div class="border-b border-gray-200 bg-white">
+                    <div class="flex">
+                        <button v-for="tab in tabs"
+                                :key="tab.id"
+                                @click="currentTab = tab.id"
+                                :class="['px-6 py-3 text-sm font-medium transition-colors border-b-2',
+                                         currentTab === tab.id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700']">
+                            {{ tab.name }}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="divide-y divide-gray-100 overflow-y-auto h-[650px]">
+                    <div v-for="n in filteredNotifications"
+                         :key="n.id"
+                         :class="['p-4 hover:bg-gray-50 cursor-pointer transition-colors flex items-start gap-3',
+                                  !n.read ? 'bg-blue-50' : '']">
+
+                        <div class="relative flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                                {{ n.user.charAt(0) }}
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-gray-100">
+                                <i :data-lucide="getIconName(n.type)"
+                                   :class="['w-4 h-4', getIconColor(n.type)]"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm">
+                                <span class="font-semibold text-gray-900">{{ n.user }}</span>
+                                <span class="text-gray-700">{{ n.action }}</span>
+                            </p>
+                            <p v-if="n.post" class="text-sm text-gray-500 mt-1 truncate">"{{ n.post }}"</p>
+                            <p v-if="n.comment" class="text-sm text-gray-500 mt-1 italic font-serif truncate">"{{ n.comment }}"</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ n.time }}</p>
+                        </div>
+
+                        <div v-if="!n.read" class="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+                    </div>
+
+                    <div v-if="filteredNotifications.length === 0" class="flex items-center justify-center h-full text-gray-400">
+                        알림이 없습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<th:block layout:fragment="script">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                currentTab: 'all',
+                tabs: [
+                    { id: 'all', name: '전체' },
+                    { id: 'like', name: '좋아요' },
+                    { id: 'comment', name: '댓글' },
+                    { id: 'share', name: '공유' }
+                ],
+                notifications: [
+                    { id: 1, type: 'like', user: '여행러버', action: '님이 회원님의 게시물을 좋아합니다', post: '에펠탑에서의 마법 같은 순간', time: '5분 전', read: false },
+                    { id: 2, type: 'comment', user: '세계일주중', action: '님이 댓글을 남겼습니다', comment: '사진 정말 잘 찍으셨네요!', time: '30분 전', read: false },
+                    { id: 3, type: 'share', user: '모험가123', action: '님이 회원님의 게시물을 공유했습니다', post: '도쿄의 밤거리', time: '1시간 전', read: true },
+                    { id: 4, type: 'follow', user: '여행마니아', action: '님이 회원님을 팔로우하기 시작했습니다', time: '2시간 전', read: true },
+                    { id: 5, type: 'like', user: '세계여행자', action: '님이 회원님의 게시물을 좋아합니다', post: '뉴욕의 스카이라인', time: '3시간 전', read: true },
+                    { id: 6, type: 'comment', user: '탐험가', action: '님이 댓글을 남겼습니다', comment: '저도 다음 달에 가요!', time: '5시간 전', read: true }
+                ]
+            },
+            computed: {
+                filteredNotifications() {
+                    if (this.currentTab === 'all') return this.notifications;
+                    return this.notifications.filter(n => n.type === this.currentTab);
+                }
+            },
+            methods: {
+                getIconName(type) {
+                    const icons = { 'like': 'heart', 'comment': 'message-circle', 'share': 'share-2', 'follow': 'user-plus' };
+                    return icons[type] || 'bell';
+                },
+                getIconColor(type) {
+                    const colors = { 'like': 'text-red-500 fill-red-500', 'comment': 'text-blue-500', 'share': 'text-green-500', 'follow': 'text-purple-500' };
+                    return colors[type] || 'text-gray-500';
+                },
+                refreshIcons() {
+                    this.$nextTick(() => {
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                    });
+                }
+            },
+            mounted() {
+                this.refreshIcons();
+            },
+            watch: {
+                currentTab() {
+                    this.refreshIcons();
+                }
+            }
+        });
+    </script>
+</th:block>
+</html>
