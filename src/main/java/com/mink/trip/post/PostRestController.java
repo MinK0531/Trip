@@ -27,7 +27,7 @@ public class PostRestController {
             @RequestParam(required = false) String musicUrl,
             @RequestParam(required = false, defaultValue = "0.0") double latitude,
             @RequestParam(required = false, defaultValue = "0.0") double longitude,
-            @RequestParam(required = false) List<MultipartFile> images,
+            @RequestParam List<MultipartFile> images,
             HttpServletRequest request
     ){
         HttpSession session = request.getSession(false);
