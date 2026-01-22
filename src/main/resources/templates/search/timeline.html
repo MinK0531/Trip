@@ -13,120 +13,167 @@
                     <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
                     <input
                             type="text"
+                            id="searchInput"
                             class="w-full pl-14 pr-6 h-14 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all text-lg"
                             placeholder="아이디, 게시물, 나라 검색..."
-                            v-model="searchQuery"
                     >
                 </div>
-                <div class="flex bg-gray-100 p-1.5 rounded-2xl">
-                    <button v-for="tab in tabs"
-                            :key="tab.id"
-                            @click="searchType = tab.id"
-                            :class="['flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all',
-                                     searchType === tab.id ? 'bg-white shadow-md text-blue-600' : 'text-gray-500 hover:text-gray-700']">
-                        <i :data-lucide="tab.icon" class="w-4 h-4" :class="searchType === tab.id ? 'fill-blue-600/10' : ''"></i>
-                        {{ tab.name }}
+                <div class="flex bg-gray-100 p-1.5 rounded-2xl" id="tabContainer">
+                    <button data-tab="all" class="tab-btn flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all bg-white shadow-md text-blue-600">
+                        <i data-lucide="search" class="w-4 h-4 fill-blue-600/10"></i> 전체
+                    </button>
+                    <button data-tab="users" class="tab-btn flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all text-gray-500 hover:text-gray-700">
+                        <i data-lucide="user" class="w-4 h-4"></i> 사용자
+                    </button>
+                    <button data-tab="countries" class="tab-btn flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all text-gray-500 hover:text-gray-700">
+                        <i data-lucide="globe" class="w-4 h-4"></i> 나라
                     </button>
                 </div>
             </div>
 
-            <div class="space-y-6 pb-20">
-                <div v-if="!searchQuery" class="text-center py-32">
+            <div id="resultArea" class="space-y-6 pb-20">
+                <div id="emptyState" class="text-center py-32">
                     <p class="text-gray-300 text-xl font-medium">검색어를 입력해주세요</p>
                 </div>
 
-                <div v-else>
-                    <div v-if="(searchType === 'all' || searchType === 'users') && filteredUsers.length > 0" class="mb-10">
+                <div id="searchResults" class="hidden">
+                    <div id="userSection" class="mb-10 hidden">
                         <h3 class="text-sm font-bold text-gray-400 mb-4 px-2 uppercase tracking-wider">Users</h3>
-                        <div class="grid gap-3">
-                            <div v-for="user in filteredUsers" :key="user.id"
-                                 class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-all cursor-pointer group">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100 group-hover:scale-110 transition-transform">
-                                    {{ user.username.charAt(0) }}
-                                </div>
-                                <div class="flex-1">
-                                    <p class="font-bold text-gray-900">{{ user.username }}</p>
-                                    <p class="text-xs text-gray-500 mt-0.5">{{ user.bio }}</p>
-                                </div>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
-                            </div>
-                        </div>
+                        <div id="userList" class="grid gap-3"></div>
                     </div>
 
-                    <div v-if="(searchType === 'all' || searchType === 'countries') && filteredPosts.length > 0">
+                    <div id="postSection" class="hidden">
                         <h3 class="text-sm font-bold text-gray-400 mb-4 px-2 uppercase tracking-wider">Posts & Countries</h3>
-                        <div class="grid gap-6">
-                            <div v-for="post in filteredPosts" :key="post.id" class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                                <div class="p-4 flex justify-between items-center border-b border-gray-50">
-                                    <div class="flex items-center gap-2">
-                                        <div class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">COUNTRY</div>
-                                        <span class="font-bold text-blue-900">{{ post.country }}</span>
-                                    </div>
-                                </div>
-                                <div class="p-5">
-                                    <p class="text-gray-800 leading-relaxed">{{ post.content }}</p>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="postList" class="grid gap-6"></div>
                     </div>
 
-                    <div v-if="filteredUsers.length === 0 && filteredPosts.length === 0" class="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+                    <div id="noResults" class="hidden text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
                         <i data-lucide="search-x" class="w-12 h-12 text-gray-200 mx-auto mb-4"></i>
-                        <p class="text-gray-400">"{{ searchQuery }}"에 대한 결과가 없습니다.</p>
+                        <p class="text-gray-400">검색 결과가 없습니다.</p>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 </div>
-
 <th:block layout:fragment="script">
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        new Vue({
-            el: '#app',
-            data: {
-                searchQuery: '',
-                searchType: 'all',
-                tabs: [
-                    { id: 'all', name: '전체', icon: 'search' },
-                    { id: 'users', name: '사용자', icon: 'user' },
-                    { id: 'countries', name: '나라', icon: 'globe' }
-                ],
-                mockUsers: [
-                    { id: 1, username: '여행러버', bio: '전 세계를 여행 중입니다', followers: 1234 },
-                    { id: 2, username: '세계일주중', bio: '365일 여행기', followers: 892 },
-                    { id: 3, username: '모험가123', bio: '모험을 사랑하는 여행자', followers: 567 },
-                    { id: 4, username: 'TravelHolic', bio: '여행에 미치다', followers: 2100 }
-                ],
-                posts: [
-                    { id: 101, country: '일본', content: '도쿄 여행 중입니다! 맛있는 스시가 너무 많아요.' },
-                    { id: 102, country: '프랑스', content: '파리의 아침, 에펠탑 앞에서 커피 한 잔의 여유.' },
-                    { id: 103, country: '미국', content: '뉴욕 타임스퀘어의 화려한 밤거리.' }
-                ]
-            },
-            computed: {
-                filteredUsers() {
-                    if(!this.searchQuery) return [];
-                    const q = this.searchQuery.toLowerCase();
-                    return this.mockUsers.filter(u => u.username.toLowerCase().includes(q));
-                },
-                filteredPosts() {
-                    if(!this.searchQuery) return [];
-                    const q = this.searchQuery.toLowerCase();
-                    return this.posts.filter(p =>
-                        p.content.toLowerCase().includes(q) ||
-                        p.country.toLowerCase().includes(q)
-                    );
+        $(document).ready(function() {
+            // 데이터 초기화
+            const mockUsers = [
+                { id: 1, username: '여행러버', bio: '전 세계를 여행 중입니다', followers: 1234 },
+                { id: 2, username: '세계일주중', bio: '365일 여행기', followers: 892 },
+                { id: 3, username: '모험가123', bio: '모험을 사랑하는 여행자', followers: 567 },
+                { id: 4, username: 'TravelHolic', bio: '여행에 미치다', followers: 2100 }
+            ];
+            const posts = [
+                { id: 101, country: '일본', content: '도쿄 여행 중입니다! 맛있는 스시가 너무 많아요.' },
+                { id: 102, country: '프랑스', content: '파리의 아침, 에펠탑 앞에서 커피 한 잔의 여유.' },
+                { id: 103, country: '미국', content: '뉴욕 타임스퀘어의 화려한 밤거리.' }
+            ];
+
+            let searchQuery = '';
+            let searchType = 'all';
+
+            // 렌더링 함수
+            function render() {
+                if (!searchQuery) {
+                    $('#emptyState').show();
+                    $('#searchResults').hide();
+                    return;
                 }
-            },
-            watch: {
-                searchQuery() { this.$nextTick(() => lucide.createIcons()); },
-                searchType() { this.$nextTick(() => lucide.createIcons()); }
-            },
-            mounted() {
+
+                $('#emptyState').hide();
+                $('#searchResults').show();
+
+                const q = searchQuery.toLowerCase();
+
+                // 1. 유저 필터링 및 렌더링
+                const filteredUsers = (searchType === 'all' || searchType === 'users')
+                    ? mockUsers.filter(u => u.username.toLowerCase().includes(q))
+                    : [];
+
+                if (filteredUsers.length > 0) {
+                    $('#userSection').show();
+                    let userHtml = '';
+                    filteredUsers.forEach(user => {
+                        userHtml += `
+                            <div class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-all cursor-pointer group">
+                                <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100 group-hover:scale-110 transition-transform">
+                                    ${user.username.charAt(0)}
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-bold text-gray-900">${user.username}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">${user.bio}</p>
+                                </div>
+                                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+                            </div>`;
+                    });
+                    $('#userList').html(userHtml);
+                } else {
+                    $('#userSection').hide();
+                }
+
+                const filteredPosts = (searchType === 'all' || searchType === 'countries')
+                    ? posts.filter(p => p.content.toLowerCase().includes(q) || p.country.toLowerCase().includes(q))
+                    : [];
+
+                if (filteredPosts.length > 0) {
+                    $('#postSection').show();
+                    let postHtml = '';
+                    filteredPosts.forEach(post => {
+                        postHtml += `
+                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                <div class="p-4 flex justify-between items-center border-b border-gray-50">
+                                    <div class="flex items-center gap-2">
+                                        <div class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">COUNTRY</div>
+                                        <span class="font-bold text-blue-900">${post.country}</span>
+                                    </div>
+                                </div>
+                                <div class="p-5">
+                                    <p class="text-gray-800 leading-relaxed">${post.content}</p>
+                                </div>
+                            </div>`;
+                    });
+                    $('#postList').html(postHtml);
+                } else {
+                    $('#postSection').hide();
+                }
+
+                // 3. 검색 결과 없음 표시
+                if (filteredUsers.length === 0 && filteredPosts.length === 0) {
+                    $('#noResults').show().find('p').text(`"${searchQuery}"에 대한 결과가 없습니다.`);
+                } else {
+                    $('#noResults').hide();
+                }
+
+                // 아이콘 재생성 (Lucide icons)
                 lucide.createIcons();
             }
+
+            // 검색 입력 이벤트
+            $('#searchInput').on('input', function() {
+                searchQuery = $(this).val();
+                render();
+            });
+
+            // 탭 클릭 이벤트
+            $('.tab-btn').on('click', function() {
+                searchType = $(this).data('tab');
+
+                // 탭 스타일 변경
+                $('.tab-btn').removeClass('bg-white shadow-md text-blue-600').addClass('text-gray-500 hover:text-gray-700');
+                $('.tab-btn i').removeClass('fill-blue-600/10');
+
+                $(this).addClass('bg-white shadow-md text-blue-600').removeClass('text-gray-500 hover:text-gray-700');
+                $(this).find('i').addClass('fill-blue-600/10');
+
+                render();
+            });
+
+            // 초기 아이콘 로드
+            lucide.createIcons();
         });
     </script>
 </th:block>

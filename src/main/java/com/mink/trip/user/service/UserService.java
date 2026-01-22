@@ -45,8 +45,9 @@ public class UserService {
         return userRepository.findBySigninIdAndPassword(signinId, encodededPassword);
     }
 
-//    public User getUserById(long id){
-//        return userRepository.findById(id);
-//    }
+    public User getUserById(long id){
+        return userRepository.findById(id).orElse(null);
+    }
+
 
 }

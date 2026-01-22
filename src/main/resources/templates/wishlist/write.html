@@ -22,4 +22,39 @@
 
 </th:block>
 <th:block th:fragment="WishlistPopupScript">
+    <script>
+        $(function () {
+
+            $('#wishSubmitBtn').on('click', function () {
+
+                const data = {
+                    place: $('#wishPlace').val().trim(),
+                    country: $('#wishCountry').val().trim(),
+                    period: $('#wishPeriod').val().trim(),
+                    startDate: $('#wishStartDate').val(),
+                    endDate: $('#wishEndDate').val(),
+                    memo: $('#wishMemo').val().trim()
+                };
+
+                if (!data.place) {
+                    alert('여행지를 입력해 주세요.');
+                    $('#wishPlace').focus();
+                    return;
+                }
+
+                if (!data.country) {
+                    alert('국가를 입력해 주세요.');
+                    $('#wishCountry').focus();
+                    return;
+                }
+
+                console.log('위시리스트 데이터', data);
+
+
+                alert('위시리스트가 추가되었습니다.');
+                $('.modal').modal('hide');
+            });
+
+        });
+    </script>
 </th:block>

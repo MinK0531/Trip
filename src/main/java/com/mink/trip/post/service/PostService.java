@@ -1,23 +1,31 @@
 package com.mink.trip.post.service;
 
 import com.mink.trip.common.FileManager;
+import com.mink.trip.country.domain.Country;
+import com.mink.trip.country.repository.CountryRepository;
 import com.mink.trip.post.domain.Post;
 import com.mink.trip.post.domain.PostImage;
+import com.mink.trip.post.dto.PostDetail;
+import com.mink.trip.post.dto.PostImageDetail;
 import com.mink.trip.post.repository.PostRepository;
+import com.mink.trip.user.domain.User;
 import com.mink.trip.user.repository.UserRepository;
+import com.mink.trip.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Service
 public class PostService {
     private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final CountryRepository countryRepository;
 
     public boolean createPost(long userId,
                               long countryId,
@@ -67,8 +75,43 @@ public class PostService {
     }
 
 
+    public List<PostDetail> getPostList(long userId) {
+        List<Post> postList = postRepository.findAll(Sort.by("id").descending());
+        List<PostDetail> postDetailList = new ArrayList<>();
 
-    public List<Post> getPostList() {
-        return postRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        for(Post post : postList) {
+            User user = userService.getUserById(post.getUserId());
+
+            List<PostImageDetail> imageDetails = post.getImages().stream()
+                    .map(img -> PostImageDetail.builder()
+                            .id(img.getId())
+                            .imagePath(img.getImagePath())
+                            .sortOrder(img.getSortOrder())
+                            .build())
+                    .toList();
+            String countryName = countryRepository.findById(post.getCountryId())
+                    .map(Country::getCountryName)
+                    .orElse("알 수 없는 나라");
+
+            PostDetail postDetail = PostDetail.builder()
+                    .id(post.getId())
+                    .userId(post.getUserId())
+                    .signinId(user.getSigninId())
+                    .countryId(post.getCountryId())
+                    .countryName(countryName)
+                    .cityName(post.getCityName())
+                    .contents(post.getContents())
+                    .atmosphere(post.getAtmosphere())
+                    .placeName(post.getPlaceName())
+                    .musicUrl(post.getMusicUrl())
+                    .latitude(post.getLatitude())
+                    .longitude(post.getLongitude())
+                    .createdAt(post.getCreatedAt())
+                    .imageList(imageDetails)
+                    .build();
+
+            postDetailList.add(postDetail);
+        }
+        return postDetailList;
     }
 }

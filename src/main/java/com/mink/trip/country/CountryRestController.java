@@ -19,8 +19,13 @@ public class CountryRestController {
     @GetMapping("/list")
     public List<CountryDetail> getCountryList() {
         return countryService.getCountryList().stream()
-                .map(c -> new CountryDetail(c.getId(), c.getCountryName(), c.getCountryNameEn(), c.getCountryCode()))
+                .map(c -> new CountryDetail(
+                        c.getId(),
+                        c.getCountryName(),
+                        c.getCountryNameEn(),
+                        c.getCountryCode()))
                 .toList();
+
     }
 
 }

@@ -84,24 +84,31 @@
         <button class="close-btn" onclick="closeModal()">닫기</button>
     </div>
 </div>
-
 <script layout:fragment="script">
     let COUNTRY_MAP = {};
 
-    fetch('/country/list')
-        .then(res => res.json())
-        .then(data => {
-            data.forEach(country => {
+    $.ajax({
+        url: "/country/list",
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            $.each(data, function (_, country) {
                 COUNTRY_MAP[country.countryCode] = country.countryName;
             });
             initMap();
-        });
+        },
+        error: function () {
+            console.error("나라 목록 로딩 실패");
+        }
+    });
+
     function initMap() {
         am5.ready(function () {
-            var root = am5.Root.new("chartdiv");
+
+            const root = am5.Root.new("chartdiv");
             root.setThemes([am5themes_Animated.new(root)]);
 
-            var chart = root.container.children.push(
+            const chart = root.container.children.push(
                 am5map.MapChart.new(root, {
                     panX: "rotateX",
                     panY: "rotateY",
@@ -113,29 +120,33 @@
                 })
             );
 
-            // 바다
-            var backgroundSeries = chart.series.push(
+            /* ===== 바다 ===== */
+            const backgroundSeries = chart.series.push(
                 am5map.MapPolygonSeries.new(root, {})
             );
+
             backgroundSeries.mapPolygons.template.setAll({
                 fill: am5.color(0xE5E5E5),
                 fillOpacity: 0.5,
                 strokeOpacity: 0
             });
+
             backgroundSeries.data.push({
                 geometry: am5map.getGeoRectangle(90, 180, -90, -180)
             });
 
-            var graticuleSeries = chart.series.push(
+            /* ===== 경도/위도 그리드 ===== */
+            const graticuleSeries = chart.series.push(
                 am5map.GraticuleSeries.new(root, {})
             );
+
             graticuleSeries.mapLines.template.setAll({
                 stroke: am5.color(0x000000),
                 strokeOpacity: 0.08,
                 strokeWidth: 0.5
             });
 
-            var polygonSeries = chart.series.push(
+            const polygonSeries = chart.series.push(
                 am5map.MapPolygonSeries.new(root, {
                     geoJSON: am5geodata_worldLow
                 })
@@ -154,20 +165,20 @@
             });
 
             polygonSeries.events.on("datavalidated", function () {
-                am5.array.each(polygonSeries.dataItems, function (dataItem) {
-                    var id = dataItem.get("id"); // ISO 코드
+                am5.array.each(polygonSeries.dataItems, function (item) {
+                    const id = item.get("id");
                     if (COUNTRY_MAP[id]) {
-                        dataItem.set("name", COUNTRY_MAP[id]);
+                        item.set("name", COUNTRY_MAP[id]);
                     }
                 });
             });
 
-            var pointSeries = chart.series.push(
+            const pointSeries = chart.series.push(
                 am5map.MapPointSeries.new(root, {})
             );
 
             pointSeries.bullets.push(function () {
-                var circle = am5.Circle.new(root, {
+                const circle = am5.Circle.new(root, {
                     radius: 6,
                     fill: am5.color(0xff0000),
                     stroke: am5.color(0xffffff),
@@ -177,32 +188,32 @@
                 });
 
                 circle.events.on("click", function (ev) {
-                    var data = ev.target.dataItem.dataContext;
+                    const data = ev.target.dataItem.dataContext;
                     openModal(
                         data.title,
                         `위도: ${data.latitude.toFixed(2)}<br>경도: ${data.longitude.toFixed(2)}`
                     );
                 });
 
-                return am5.Bullet.new(root, {sprite: circle});
+                return am5.Bullet.new(root, { sprite: circle });
             });
 
             chart.events.on("dblclick", function (ev) {
-                var geoPoint = chart.invert(ev.point);
-                if (geoPoint) {
-                    pointSeries.data.push({
-                        geometry: {
-                            type: "Point",
-                            coordinates: [
-                                geoPoint.longitude,
-                                geoPoint.latitude
-                            ]
-                        },
-                        title: "내가 추가한 장소",
-                        latitude: geoPoint.latitude,
-                        longitude: geoPoint.longitude
-                    });
-                }
+                const geoPoint = chart.invert(ev.point);
+                if (!geoPoint) return;
+
+                pointSeries.data.push({
+                    geometry: {
+                        type: "Point",
+                        coordinates: [
+                            geoPoint.longitude,
+                            geoPoint.latitude
+                        ]
+                    },
+                    title: "내가 추가한 장소",
+                    latitude: geoPoint.latitude,
+                    longitude: geoPoint.longitude
+                });
             });
 
             chart.animate({
@@ -216,17 +227,17 @@
             chart.appear(1000, 100);
         });
     }
+
     function openModal(title, desc) {
-        document.getElementById("modal-title").innerHTML = title;
-        document.getElementById("modal-desc").innerHTML = desc;
-        document.getElementById("modal").style.display = "block";
-        document.getElementById("modal-overlay").style.display = "block";
+        $("#modal-title").html(title);
+        $("#modal-desc").html(desc);
+        $("#modal, #modal-overlay").show();
     }
 
     function closeModal() {
-        document.getElementById("modal").style.display = "none";
-        document.getElementById("modal-overlay").style.display = "none";
+        $("#modal, #modal-overlay").hide();
     }
 </script>
+
 </body>
 </html>

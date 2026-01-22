@@ -19,7 +19,7 @@
                                 <input type="file" id="image-input" class="d-none" multiple accept="image/*">
 
                                 <div id="upload-placeholder" class="text-center">
-                                    <i data-lucide="image" class="mb-2 image-upload-icon" style="cursor:pointer"></i>
+                                    <i data-lucide="image" class="mb-2 image-upload-icon"></i>
                                     <p class="upload-text">사진을 여기에 끌어다 놓으세요</p>
                                     <button type="button" class="btn btn-instagram-style" id="selectImgeBtn">
                                         컴퓨터에서 선택
@@ -68,54 +68,87 @@
             </div>
         </div>
     </div>
+    <input type="hidden" id="latitude" name="latitude" value="0.0">
+    <input type="hidden" id="longitude" name="longitude" value="0.0">
 
 </th:block>
 <th:block th:fragment="PostPopupScript">
     <script>
-        const countrySelect = document.getElementById('country');
-        const citySelect = document.getElementById('city');
+        $(function () {
+            const $countrySelect = $("#country");
+            const $citySelect = $("#city");
+            const $latitude = $("#latitude");
+            const $longitude = $("#longitude");
 
-        fetch('/country/list')
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(c => {
-                    const option = document.createElement('option');
-                    option.value = c.countryNameEn;
-                    option.textContent = c.countryName;
-                    option.setAttribute('data-id', c.id);
-                    countrySelect.appendChild(option);
+            $.ajax({
+                url: "/country/list",
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    $.each(data, function (_, c) {
+                        $("<option>")
+                            .val(c.countryNameEn)
+                            .text(c.countryName)
+                            .attr("data-id", c.id)
+                            .appendTo($countrySelect);
+                    });
+                },
+                error: function () {
+                    console.error("나라 목록 로딩 실패");
+                }
+            });
+
+            $countrySelect.on("change", function () {
+                const countryName = $(this).val();
+
+                $citySelect.html('<option value="" disabled selected>도시명</option>')
+                    .prop("disabled", true);
+
+                $.ajax({
+                    url: "/city/list",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ country: countryName }),
+                    success: function (res) {
+                        const cities = res.data.cities || [];
+                        cities.sort().forEach(city => {
+                            $("<option>").val(city).text(city).appendTo($citySelect);
+                        });
+                        $citySelect.prop("disabled", cities.length === 0);
+
+                        // 나라 좌표 자동 저장
+                        $latitude.val(res.data.latitude || 0.0);
+                        $longitude.val(res.data.longitude || 0.0);
+                    },
+                    error: function (err) {
+                        console.error(err);
+                    }
                 });
             });
 
-        countrySelect.addEventListener('change', () => {
-            const selectedCountry = countrySelect.value;
+            $citySelect.on("change", function () {
+                const countryName = $countrySelect.val();
+                const cityName = $(this).val();
 
-            citySelect.innerHTML = '<option value="" disabled selected>도시명</option>';
-            citySelect.disabled = true;
+                if (!cityName) return;
 
-            fetch('https://countriesnow.space/api/v0.1/countries/cities', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ country: selectedCountry })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.data) return;
-
-                    data.data.sort().forEach(city => {
-                        const option = document.createElement('option');
-                        option.value = city;
-                        option.textContent = city;
-                        citySelect.appendChild(option);
-                    });
-
-                    citySelect.disabled = false;
-                })
-                .catch(err => console.error(err));
+                $.ajax({
+                    url: "/city/list",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ country: countryName, city: cityName }),
+                    success: function (res) {
+                        $latitude.val(res.data.latitude || 0.0);
+                        $longitude.val(res.data.longitude || 0.0);
+                    },
+                    error: function (err) {
+                        console.error(err);
+                    }
+                });
+            });
         });
+
     </script>
-
-
 
     <script>
         const selectedFiles = [];
@@ -125,112 +158,127 @@
         const $placeholder = $("#upload-placeholder");
         const $dropZone = $("#drop-zone");
 
-            $(document).on("click", "#selectImgeBtn, .image-upload-icon", function () {
-                $fileInput.click();
-            });
 
-            function handleFiles(files) {
-                const fileArray = Array.from(files);
+        const getCurrentIndex = () => {
+            const width = $previewContainer.width();
+            return Math.round($previewContainer.scrollLeft() / width);
+        };
 
-                fileArray.forEach(file => {
-                    if (!file.type.startsWith("image/")) {
-                        alert("이미지 파일만 업로드 가능합니다.");
-                        return;
-                    }
+        const scrollToIndex = (index) => {
+            const width = $previewContainer.width();
+            $previewContainer.stop().animate({
+                scrollLeft: width * index
+            }, 300);
+        };
 
-                    selectedFiles.push(file);
+        const updateActiveDot = () => {
+            const index = getCurrentIndex();
+            $dotsContainer.find(".dot")
+                .removeClass("active")
+                .eq(index).addClass("active");
+        };
 
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        const previewHtml = `
-                            <div class="preview-item">
-                                <img src="${ev.target.result}">
-                                <button type="button" class="remove-img-btn">&times;</button>
-                            </div>
-                        `;
-                        $previewContainer.append(previewHtml);
-                        $dotsContainer.append('<div class="dot"></div>');
-
-                        updateUI();
-                        scrollToImage(selectedFiles.length - 1);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            function scrollToImage(index) {
-                const width = $previewContainer.width();
-                $previewContainer.stop().animate({
-                    scrollLeft: width * index
-                }, 400);
-            }
-
-            $(document).on('keydown', function(e) {
-                if (selectedFiles.length > 0) {
-                    const width = $previewContainer.width();
-                    const currentScroll = $previewContainer.scrollLeft();
-                    let currentIndex = Math.round(currentScroll / width);
-
-                    if (e.keyCode === 37) {
-                        if (currentIndex > 0) scrollToImage(currentIndex - 1);
-                    } else if (e.keyCode === 39) {
-                        if (currentIndex < selectedFiles.length - 1) scrollToImage(currentIndex + 1);
-                    }
-                }
-            });
-
-            $(document).on("click", ".remove-img-btn", function() {
-                const $item = $(this).closest('.preview-item');
-                const index = $(".preview-item").index($item);
-
-                selectedFiles.splice(index, 1);
-                $item.remove();
-                $('.dot').eq(index).remove();
-
-                updateUI();
-            });
-
-            function updateUI() {
-                if (selectedFiles.length > 0) {
-                    $placeholder.hide();
-                    $previewContainer.css('display', 'flex');
-                    $dotsContainer.show();
-                    updateActiveDot();
-                } else {
-                    $placeholder.show();
-                    $previewContainer.hide();
-                    $dotsContainer.hide().empty();
-                    $fileInput.val("");
-                }
-            }
-
-            $previewContainer.on('scroll', function() {
+        const updateUI = () => {
+            if (selectedFiles.length > 0) {
+                $placeholder.hide();
+                $previewContainer.css("display", "flex");
+                $dotsContainer.show();
                 updateActiveDot();
-            });
+            } else {
+                $placeholder.show();
+                $previewContainer.hide();
+                $dotsContainer.hide().empty();
+                $fileInput.val("");
+            }
+        };
 
-            function updateActiveDot() {
-                const width = $previewContainer.width();
-                const index = Math.round($previewContainer.scrollLeft() / width);
-                $('.dot').removeClass('active').eq(index).addClass('active');
+
+        function handleFiles(files) {
+            [...files].forEach(file => {
+                if (!file.type.startsWith("image/")) {
+                    alert("이미지 파일만 업로드 가능합니다.");
+                    return;
+                }
+
+                selectedFiles.push(file);
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    $previewContainer.append(`
+                <div class="preview-item">
+                    <img src="${e.target.result}">
+                    <button type="button" class="remove-img-btn">&times;</button>
+                </div>
+            `);
+
+                    $dotsContainer.append(`<div class="dot"></div>`);
+
+                    updateUI();
+                    scrollToIndex(selectedFiles.length - 1);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+
+        $(document).on("click", "#selectImgeBtn, .image-upload-icon", () => {
+            $fileInput.click();
+        });
+
+        $fileInput.on("change", e => handleFiles(e.target.files));
+
+        $(document).on("click", ".remove-img-btn", function () {
+            const $item = $(this).closest(".preview-item");
+            const index = $item.index();
+
+            selectedFiles.splice(index, 1);
+            $item.remove();
+            $dotsContainer.find(".dot").eq(index).remove();
+
+            updateUI();
+        });
+
+        $previewContainer.on("scroll", updateActiveDot);
+
+        $dotsContainer.on("click", ".dot", function () {
+            scrollToIndex($(this).index());
+        });
+
+        $(document).on("keydown", function (e) {
+            if (!$previewContainer.is(":visible")) return;
+            if (selectedFiles.length === 0) return;
+
+            const index = getCurrentIndex();
+
+            if (e.key === "ArrowLeft" && index > 0) {
+                scrollToIndex(index - 1);
             }
 
-            $fileInput.on("change", function(e) {
-                handleFiles(e.target.files);
-            });
+            if (e.key === "ArrowRight" && index < selectedFiles.length - 1) {
+                scrollToIndex(index + 1);
+            }
+        });
 
-            $dropZone.on('dragover', (e) => {
-                e.preventDefault();
-                $dropZone.addClass('drag-active');
-            });
+        $dropZone.on("dragover", e => {
+            e.preventDefault();
+            $dropZone.addClass("drag-active");
+        });
 
-            $dropZone.on('dragleave', () => $dropZone.removeClass('drag-active'));
+        $dropZone.on("dragleave", () =>
+            $dropZone.removeClass("drag-active")
+        );
 
-            $dropZone.on('drop', function(e) {
-                e.preventDefault();
-                $dropZone.removeClass('drag-active');
-                handleFiles(e.originalEvent.dataTransfer.files);
-            });
+        $dropZone.on("drop", e => {
+            e.preventDefault();
+            $dropZone.removeClass("drag-active");
+            handleFiles(e.originalEvent.dataTransfer.files);
+        });
+    </script>
 
+
+
+
+    <script>
         $(".btn-upload-blue").on("click", function() {
             const contents = $("#contents").val().trim();
             const countryNameEn = $("#country").val();
@@ -266,8 +314,8 @@
             formData.append("musicUrl", musicUrl || "");
             formData.append("atmosphere", atmosphere || "");
             formData.append("placeName", placeName || "");
-            formData.append("latitude", 0.0);
-            formData.append("longitude", 0.0);
+            formData.append("latitude", $("#latitude").val());
+            formData.append("longitude", $("#longitude").val());
 
             $.ajax({
                 type: "POST",

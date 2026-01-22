@@ -45,7 +45,6 @@
             }, 300);
         }
 
-        // 파일명 표시 (이벤트 위임)
         $(document).on('change', '#postImageFile', function () {
             $('#postFileName').text(
                 this.files[0] ? this.files[0].name : ''
@@ -53,6 +52,7 @@
         });
 
         $('#postCreateModal, #wishCreateModal').on('shown.bs.modal', function () {
+
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }

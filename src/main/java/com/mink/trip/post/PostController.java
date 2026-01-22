@@ -1,6 +1,7 @@
 package com.mink.trip.post;
 
 import com.mink.trip.post.domain.Post;
+import com.mink.trip.post.dto.PostDetail;
 import com.mink.trip.post.service.PostService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class PostController {
                            HttpSession session) {
         long userId = (Long) session.getAttribute("userId");
 
-        List<Post> postList = postService.getPostList();
+        List<PostDetail> postList = postService.getPostList(userId);
         model.addAttribute("postList", postList);
         return "/post/timeline";
     }
