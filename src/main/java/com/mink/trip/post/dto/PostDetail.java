@@ -13,8 +13,9 @@ import java.util.List;
 @AllArgsConstructor
 public class PostDetail {
     private long id;
+
     private long userId;
-    private String signinId;
+    private String nickName;
 
     private long countryId;
     private String countryName;
@@ -25,6 +26,10 @@ public class PostDetail {
     private String musicUrl;
     private double latitude;
     private double longitude;
+
+    private int likeCount;
+    private  boolean isLike;
+
     private LocalDateTime createdAt;
     private List<PostImageDetail> imageList;
 }

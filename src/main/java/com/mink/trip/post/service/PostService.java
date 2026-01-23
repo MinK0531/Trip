@@ -3,6 +3,7 @@ package com.mink.trip.post.service;
 import com.mink.trip.common.FileManager;
 import com.mink.trip.country.domain.Country;
 import com.mink.trip.country.repository.CountryRepository;
+import com.mink.trip.like.service.LikeService;
 import com.mink.trip.post.domain.Post;
 import com.mink.trip.post.domain.PostImage;
 import com.mink.trip.post.dto.PostDetail;
@@ -25,6 +26,7 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final UserService userService;
+    private  final LikeService likeService;
     private final CountryRepository countryRepository;
 
     public boolean createPost(long userId,
@@ -82,6 +84,9 @@ public class PostService {
         for(Post post : postList) {
             User user = userService.getUserById(post.getUserId());
 
+            int likeCount = likeService.countByPostId(post.getId());
+            boolean isLike = likeService.isLikeByPostIdAndUserId(post.getId(), userId);
+
             List<PostImageDetail> imageDetails = post.getImages().stream()
                     .map(img -> PostImageDetail.builder()
                             .id(img.getId())
@@ -96,7 +101,7 @@ public class PostService {
             PostDetail postDetail = PostDetail.builder()
                     .id(post.getId())
                     .userId(post.getUserId())
-
+                    .nickName(user.getNickName())
                     .countryId(post.getCountryId())
                     .countryName(countryName)
                     .cityName(post.getCityName())
@@ -106,6 +111,8 @@ public class PostService {
                     .musicUrl(post.getMusicUrl())
                     .latitude(post.getLatitude())
                     .longitude(post.getLongitude())
+                    .likeCount(likeCount)
+                    .isLike(isLike)
                     .createdAt(post.getCreatedAt())
                     .imageList(imageDetails)
                     .build();

@@ -770,3 +770,16 @@ main {
     clip-path: polygon(0 0,100% 0,100% 100%,20% 100%)
 }
 
+.btn-like-icon {
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.icon-stroke-thick {
+    -webkit-text-stroke-width: 0.9px;
+}
+
+.like-count-text {
+    font-size: 18px;
+    font-weight: 400;
+}
