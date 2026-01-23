@@ -107,32 +107,40 @@
                     </div>
 
                     <div>
-                        <label class="text-xs text-gray-500 uppercase">Email Address</label>
-                        <input
-                                type="email"
-                                placeholder="example@email.com"
-                                id="emailInput"
-                                class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
-                        />
-                    </div>
-
-                    <div class="small text-danger mt-2 ml-2 d-none" id="emailInvalidText">이메일 형식이 올바르지 않습니다.</div>
-
-                    <div>
-                        <label class="text-xs text-gray-500 uppercase">Id</label>
+                        <label class="text-xs text-gray-500 uppercase">NickName</label>
 
                         <div class="flex items-center gap-2 mt-1">
                             <input
                                     type="text"
-                                    placeholder="id를 입력하세요"
-                                    id="idInput"
+                                    placeholder="닉네임을 입력하세요"
+                                    id="nickNameInput"
                                     class="flex-1 h-11 px-4 rounded-md bg-gray-50 border border-gray-200"
                             />
 
                         </div>
                     </div>
-                    <div class="small text-danger mt-2 ml-2 d-none" id="idDuplicateText">중복되었습니다.</div>
-                    <div class="small text-info mt-2 ml-2 d-none" id="idAvailableText">사용 가능합니다.</div>
+                    <div class="small text-danger mt-2 ml-2 d-none" id="nickNameDuplicateText">중복되었습니다.</div>
+                    <div class="small text-info mt-2 ml-2 d-none" id="nickNameAvailableText">사용 가능합니다.</div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Email Address</label>
+                        <input
+                        type="email"
+                        placeholder="example@email.com"
+                        id="emailInput"
+                        class="w-full h-11 mt-1 px-4 rounded-md bg-gray-50 border border-gray-200"
+                        />
+                    </div>
+
+                    <div class="small text-danger mt-2 ml-2 d-none" id="emailInvalidText">
+                        이메일 형식이 올바르지 않습니다.
+                    </div>
+                    <div class="small text-danger mt-2 ml-2 d-none" id="emailDuplicateText">
+                        이미 사용 중인 이메일입니다.
+                    </div>
+                    <div class="small text-info mt-2 ml-2 d-none" id="emailAvailableText">
+                        사용 가능한 이메일입니다.
+                    </div>
+
 
                     <div>
                         <label class="text-xs text-gray-500 uppercase">Password Code</label>
@@ -191,8 +199,10 @@
 <script> lucide.createIcons(); </script>
 
 <script>
-    var isIdChecked = false;
-    var isIdDuplicate = true;
+    var isnickNameChecked = false;
+    var isnickNameDuplicate = true;
+    var isEmailChecked = false;
+    var isEmailDuplicate = true;
 
     function isValidEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -234,7 +244,7 @@
 
 
     $("#signupBtn").on("click", function (){
-        let id = $("#idInput").val();
+        let nickNmae = $("#nickNameInput").val();
         let password = $("#passwordInput").val();
         let passwordConfirm = $("#passwordConfirmInput").val();
         let name = $("#nameInput").val();
@@ -255,19 +265,29 @@
             return;
         }
 
-        if(id == ""){
-            alert("아이디를 입력하세요");
+        if(nickNmae == ""){
+            alert("닉네임을 입력하세요");
             return;
         }
 
-        if(!isIdChecked){
-            alert("중복되었습니다");
+        if(!isnickNameChecked){
+            alert("닉네임 중복 확인이 필요합니다");
             return;
         }
 
-        if(isIdDuplicate) {
-            alert("아이디가 중복되었습니다");
+        if(isnickNameDuplicate) {
+            alert("이미 사용 중인 닉네임입니다");
             return ;
+        }
+
+        if (!isEmailChecked) {
+            alert("이메일 중복 확인이 필요합니다");
+            return;
+        }
+
+        if (isEmailDuplicate) {
+            alert("이미 사용 중인 이메일입니다");
+            return;
         }
 
         if(password == ""){
@@ -283,7 +303,7 @@
         $.ajax({
             type:"post"
             , url:"/user/signup-process"
-            , data: {"signinId": id,"password":password,"name":name, "countryCode": $("#originSelect").val(), "email":email}
+            , data: {"nickName": nickNmae,"password":password,"name":name, "countryCode": $("#originSelect").val(), "email":email}
             ,success: function (response) {
                 if(response.result =="success"){
                     location.href = "/user/signin";
@@ -297,31 +317,67 @@
         });
     });
 
-    $("#idInput").on("input", function(){
-        const id = $(this).val();
+    $("#emailInput").on("input", function () {
+        const email = $(this).val();
 
-        if(id === ""){
-            $("#idAvailableText").addClass("d-none");
-            return;
-        }
+        isEmailChecked = false;
+        isEmailDuplicate = true;
+
+        $("#emailDuplicateText").addClass("d-none");
+        $("#emailAvailableText").addClass("d-none");
+
+        if (email === "") return;
+        if (!isValidEmail(email)) return;
 
         $.ajax({
-            type: "get"
-            , url: "/user/duplicate-id"
-            ,data: {"signinId":id}
-            ,success: function (response) {
-                isIdChecked  = true;
-                isIdDuplicate = response.isDuplicate;
-                if(response.isDuplicate){
-                    $("#idDuplicateText").removeClass("d-none");
-                    $("#idAvailableText").addClass("d-none");
-                }else {
-                    $("#idAvailableText").removeClass("d-none");
-                    $("#idDuplicateText").addClass("d-none");
+            type: "get",
+            url: "/user/duplicate-email",
+            data: { email: email },
+            success: function (response) {
+                isEmailChecked = true;
+                isEmailDuplicate = response.data;
+
+                if (response.data) {
+                    $("#emailDuplicateText").removeClass("d-none");
+                } else {
+                    $("#emailAvailableText").removeClass("d-none");
                 }
+            },
+            error: function () {
+                alert("이메일 중복 확인 에러!");
             }
-            , error: function (){
-                alert("중복확인 에러!");
+        });
+    });
+
+
+    $("#nickNameInput").on("input", function () {
+        const nickName = $(this).val();
+
+        // 상태 초기화
+        isnickNameChecked = false;
+        isnickNameDuplicate = true;
+
+        $("#nickNameDuplicateText").addClass("d-none");
+        $("#nickNameAvailableText").addClass("d-none");
+
+        if (nickName === "") return;
+
+        $.ajax({
+            type: "get",
+            url: "/user/duplicate-nickName",
+            data: { nickName: nickName },
+            success: function (response) {
+                isnickNameChecked = true;
+                isnickNameDuplicate = response.data;
+
+                if (response.data) {
+                    $("#nickNameDuplicateText").removeClass("d-none");
+                } else {
+                    $("#nickNameAvailableText").removeClass("d-none");
+                }
+            },
+            error: function () {
+                alert("닉네임 중복 확인 에러!");
             }
         });
     });

@@ -37,13 +37,16 @@
 
             <div  class="space-y-4">
                 <div>
-                    <label class="text-gray-500 text-sm mb-1 uppercase">Id</label>
-                    <input type="text"
-                           id="idInput"
-                           name="idInput"
+                    <label class="text-gray-500 text-sm mb-1 uppercase">Email</label>
+                    <input type="email"
+                           id="emailInput"
+                           name="emailInput"
                            class="w-full h-11 border rounded px-3"
-                           placeholder="아이디를 입력하세요"
+                           placeholder="이메일을 입력하세요"
                            required>
+                </div>
+                <div class="small text-danger mt-2 ml-2 d-none" id="emailInvalidText">
+                    이메일 형식이 올바르지 않습니다.
                 </div>
 
                 <div>
@@ -93,12 +96,31 @@
 <script> lucide.createIcons(); </script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script>
+    function isValidEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    $("#emailInput").on("input", function(){
+        const email = $(this).val();
+        if(email === ""){
+            $("#emailInvalidText").addClass("d-none");
+            return;
+        }
+
+        if(!isValidEmail(email)){
+            $("#emailInvalidText").removeClass("d-none");
+        } else {
+            $("#emailInvalidText").addClass("d-none");
+        }
+    });
+
     $("#signinBtn").on("click", function (){
-        let id = $("#idInput").val();
+        let email = $("#emailInput").val();
         let password = $("#passwordInput").val();
 
-        if(id == ""){
-            alert("아이디를 입력하세요");
+        if(email == ""){
+            alert("이메일을 입력하세요");
             return;
         }
 
@@ -110,12 +132,12 @@
         $.ajax({
             type: "post"
             ,url:"/user/signin-process"
-            ,data:{"signinId":id, "password":password}
+            ,data:{"email":email, "password":password}
             ,success: function (response){
                 if(response.result == "success"){
                     location.href = "/post/timeline";
                 }else {
-                    alert("아이디와 비밀번호를 확인해 주세요");
+                    alert("이메일과 비밀번호를 확인해 주세요");
                 }
             }
             ,error: function (){

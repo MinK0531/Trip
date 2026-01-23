@@ -14,7 +14,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     public boolean createUser(
-            String signinId,
+            String nickName,
             String password,
             String name,
             String countryCode,
@@ -23,7 +23,7 @@ public class UserService {
         String encodePassword = SHA256HashingEncoder.encode(password);
 
         User user = User.builder()
-                .signinId(signinId)
+                .nickName(nickName)
                 .password(encodePassword)
                 .name(name)
                 .countryCode(countryCode)
@@ -36,13 +36,15 @@ public class UserService {
         }
         return true;
     }
-
-    public boolean isDuplicateId(String signinId) {
-        return userRepository.existsBySigninId(signinId);
+    public boolean isDuplicateEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
-    public User getUser(String signinId, String password){
+    public boolean isDuplicateNickName(String nickName) {
+        return userRepository.existsBynickName(nickName);
+    }
+    public User getUser(String email, String password){
         String encodededPassword = SHA256HashingEncoder.encode(password);
-        return userRepository.findBySigninIdAndPassword(signinId, encodededPassword);
+        return userRepository.findByEmailAndPassword(email, encodededPassword);
     }
 
     public User getUserById(long id){

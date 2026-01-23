@@ -22,43 +22,52 @@ public class UserRestController {
     @PostMapping("/signup-process")
     public ApiResponse<Void> signup(
 
-            @RequestParam String signinId
+            @RequestParam String nickName
             ,@RequestParam String password
             ,@RequestParam String name
             ,@RequestParam String countryCode
             ,@RequestParam String email)
     {
 
-        if(userService.createUser(signinId, password, name, countryCode, email)){
+        if(userService.createUser(nickName, password, name, countryCode, email)){
             return ApiResponse.success("회원가입 성공");
         }else{
-            return ApiResponse.fail("회원가입 성공");
+            return ApiResponse.fail("회원가입 실패");
         }
 
     }
-    @GetMapping("/duplicate-id")
-    public ApiResponse<Boolean> isDuplicateId(@RequestParam String signinId){
+    @GetMapping("/duplicate-nickName")
+    public ApiResponse<Boolean> isDuplicateNickName(@RequestParam String nickName){
 
-        if(userService.isDuplicateId(signinId)){
-            return ApiResponse.success("중복된 아이디", true);
+        if(userService.isDuplicateNickName(nickName)){
+            return ApiResponse.success("중복된 닉네임", true);
         }else{
-            return ApiResponse.success("사용 가능한 아이디", false);
+            return ApiResponse.success("사용 가능한 닉네임", false);
+        }
+    }
+    @GetMapping("/duplicate-email")
+    public ApiResponse<Boolean> isDuplicateEmail(@RequestParam String email){
+
+        if(userService.isDuplicateEmail(email)){
+            return ApiResponse.success("중복된 이메일", true);
+        }else{
+            return ApiResponse.success("사용 가능한 이메일", false);
         }
     }
 
 
     @PostMapping("/signin-process")
     public ApiResponse<Void> signin(
-            @RequestParam String signinId
+            @RequestParam String email
             , @RequestParam String password
             , HttpServletRequest request){
-        User user = userService.getUser(signinId,password);
+        User user = userService.getUser(email,password);
 
         if(user != null){
             HttpSession session = request.getSession();
 
             session.setAttribute("userId",user.getId());
-            session.setAttribute("userSigninId",user.getSigninId());
+            session.setAttribute("userNickName",user.getNickName());
             session.setAttribute("userCountry", user.getCountryCode());
 
             return ApiResponse.success("로그인 성공");

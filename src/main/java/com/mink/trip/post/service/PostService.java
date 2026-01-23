@@ -96,7 +96,7 @@ public class PostService {
             PostDetail postDetail = PostDetail.builder()
                     .id(post.getId())
                     .userId(post.getUserId())
-                    .signinId(user.getSigninId())
+
                     .countryId(post.getCountryId())
                     .countryName(countryName)
                     .cityName(post.getCityName())
