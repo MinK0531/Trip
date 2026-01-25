@@ -2,6 +2,7 @@ package com.mink.trip.comment;
 
 import com.mink.trip.comment.dto.CommentDetail;
 import com.mink.trip.comment.service.CommentService;
+import com.mink.trip.common.dto.ApiResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,19 +21,22 @@ public class CommentRestController {
         return commentService.getCommentList(postId);
     }
     @PostMapping("/post/comment/write")
-    public Map<String, String> writeComment(
-            @RequestParam Long postId,
+    public ApiResponse<Void> writeComment(
+            @RequestParam long postId,
             @RequestParam String comments,
             @RequestParam(required = false) Long parentId,
             HttpSession session) {
 
-        Long userId = (Long) session.getAttribute("userId");
+        long userId = (Long) session.getAttribute("userId");
 
         Map<String, String> result = new HashMap<>();
-        boolean success = commentService.createComment(postId, userId, comments, parentId);
 
-        result.put("result", success ? "success" : "fail");
-        return result;
+        if(commentService.createComment(postId, userId, comments, parentId)){
+            return ApiResponse.success("댓글 성공");
+        }else {
+            return ApiResponse.fail("댓글 실패");
+        }
     }
+
 
 }

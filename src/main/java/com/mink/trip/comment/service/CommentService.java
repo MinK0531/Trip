@@ -50,7 +50,7 @@ public class CommentService {
                         .postId(postId)
                         .userId(userId)
                         .parentId(null)
-                        .rootId(0L) // 아직 ID가 없으므로 임시값
+                        .rootId(0L)
                         .depth(0)
                         .isDeleted(false)
                         .comment(comments)
