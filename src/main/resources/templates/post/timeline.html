@@ -95,11 +95,15 @@
                                    class="bi bi-heart text-dark btn-like-icon icon-stroke-thick like-btn"
                                    th:data-post-id="${post.id}"></i>
 
-                                <span class="like-count-text"
+                                <span class="count-text"
                                       th:text="${post.likeCount}">0</span>
                             </button>
-                            <button type="button" class="ml-2">
-                                <i class="bi bi-chat text-dark btn-like-icon icon-stroke-thick"></i>
+                            <button type="button" class="open-post-detail ml-2 "
+                                    th:data-post-id="${post.id}"
+                                    th:data-nickname="${post.nickName}"
+                                    th:data-location="|${post.countryName} - ${post.cityName}|"
+                                    th:data-content="${post.contents}">
+                                <i class="bi bi-chat text-dark btn-like-icon icon-stroke-thick"></i>                                <span class="count-text" th:text="${post.commentCount}">0</span>
                             </button>
                             <button type="button" class="ml-3">
                                 <i class="bi bi-share text-dark btn-like-icon icon-stroke-thick"></i>
@@ -124,49 +128,48 @@
                         <i data-lucide="music" class="w-4 h-4"></i>
                         <span th:text="${post.musicUrl}" class="truncate"></span>
                     </div>
-                    <div class="pt-2 border-t border-gray-300 flex items-center">
-                        <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-                            <img src="/img/profile.png" alt="me" class="w-full h-full object-cover">
-                        </div>
-
-                        <div class="flex-1 relative pl-4">
-                            <input type="text"
-                                   th:id="'comment-input-' + ${post.id}"
-                                   placeholder="댓글 추가..."
-                                   class="pl-2 pr-2 w-full py-1 text-sm bg-transparent border-none focus:ring-0 placeholder-gray-400">
-                        </div>
-
-                        <button type="button"
-                                th:onclick="'saveComment(' + ${post.id} + ')'"
-                                class="pl-2 text-blue-500 font-semibold text-sm hover:text-blue-700 transition-colors">
-                            게시
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
     </main>
-    <script>
-        $(".unlike-btn").on("click", function() {
-            let postId = $(this).data("post-id");
+    <th:block th:replace="post/popup_detail :: PopupDetail"></th:block>
 
-            $.ajax({
-                type:"delete"
-                , url:"/post/unlike"
-                , data:{"postId":postId}
-                , success:function(response) {
-                    if(response.result == "success") {
-                        location.reload();
-                    } else {
-                        alert("좋아요 취소 실패!");
-                    }
-                }
-                , error:function() {
-                    alert("좋아요 취소 에러!!");
-                }
+    </script>
+    <script>
+        $(function () {
+            $(".image-slider").each(function () {
+                const $slider = $(this);
+                const postId = $slider.data("post-id");
+                const $dots = $(`.feed-dots[data-post-id="${postId}"] .dot`);
+
+                if ($dots.length === 0) return;
+
+                const getIndex = () => {
+                    const scrollLeft = $slider.scrollLeft();
+                    const width = $slider.get(0).offsetWidth; // outerWidth보다 정확
+                    return Math.round(scrollLeft / width);
+                };
+
+                const scrollToIndex = (index) => {
+                    const width = $slider.get(0).offsetWidth;
+                    $slider.stop().animate({
+                        scrollLeft: index * width
+                    }, 300);
+                };
+
+                const updateDots = () => {
+                    const index = getIndex();
+                    $dots.removeClass("active");
+                    $dots.eq(index).addClass("active");
+                };
+
+                $slider.on("scroll", updateDots);
+
+                $dots.on("click", function () {
+                    scrollToIndex($(this).index());
+                });
             });
         });
-
         $(".like-btn").on("click", function() {
 
             let postId = $(this).data("post-id");
@@ -189,43 +192,32 @@
             });
 
         });
-    </script>
+        $(".unlike-btn").on("click", function() {
 
-    </script>
-    <script>
-        $(function () {
+            let postId = $(this).data("post-id");
 
-            $(".image-slider").each(function () {
-                const $slider = $(this);
-                const postId = $slider.data("post-id");
-                const $dots = $(`.feed-dots[data-post-id="${postId}"] .dot`);
+            $.ajax({
+                type:"delete"
+                , url:"/post/unlike"
+                , data:{"postId":postId}
+                , success:function(response) {
+                    if(response.result == "success") {
+                        location.reload();
+                    } else {
+                        alert("좋아요 취소 실패!");
+                    }
+                }
+                , error:function() {
+                    alert("좋아요 취소 에러!");
+                }
 
-                if ($dots.length === 0) return;
-
-                const getIndex = () =>
-                    Math.round($slider.scrollLeft() / $slider.outerWidth());
-
-                const scrollToIndex = (index) => {
-                    $slider.stop().animate({
-                        scrollLeft: index * $slider.outerWidth()
-                    }, 300);
-                };
-
-                const updateDots = () => {
-                    const index = getIndex();
-                    $dots.removeClass("active").eq(index).addClass("active");
-                };
-
-                $slider.on("scroll", updateDots);
-
-                $dots.on("click", function () {
-                    scrollToIndex($(this).index());
-                });
             });
 
         });
+
     </script>
 
+    <th:block th:replace="post/popup_detail :: PopupDetailScript"></th:block>
 
 </div>
 </html>

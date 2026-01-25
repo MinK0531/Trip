@@ -13,4 +13,5 @@ public class LikeId {
 
     private long postId;
     private long userId;
+    private long commentId;
 }

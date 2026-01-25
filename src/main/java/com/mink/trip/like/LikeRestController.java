@@ -18,29 +18,53 @@ public class LikeRestController {
     private final LikeService likeService;
 
     @PostMapping("/post/like")
-    public ApiResponse<Void> like(
+    public ApiResponse<Void> likePost(
             @RequestParam long postId,
             HttpSession session){
 
         long userId = (Long) session.getAttribute("userId");
 
-        if(likeService.createLike(postId,userId)){
+        if(likeService.createLikePost(postId,userId)){
             return ApiResponse.success("좋아요 성공");
         }else {
             return ApiResponse.fail("좋아요 실패");
         }
     }
     @DeleteMapping("/post/unlike")
-    public ApiResponse<Void> unlike(
+    public ApiResponse<Void> unlikePost(
             @RequestParam long postId,
             HttpSession session){
         long userId = (Long) session.getAttribute("userId");
 
-        if(likeService.deleteLike(postId,userId)){
+        if(likeService.deleteLikePost(postId,userId)){
             return ApiResponse.success("좋아요 취소 성공");
         }else {
             return ApiResponse.fail("좋아요 취소 실패");
         }
     }
+    @PostMapping("/comment/like")
+    public ApiResponse<Void> likeComment(
+            @RequestParam long commentId,
+            HttpSession session) {
 
+        long userId = (Long) session.getAttribute("userId");
+
+        if(likeService.createlikeComment(commentId,userId)){
+            return ApiResponse.success("댓글 좋아요 성공");
+        }else {
+            return ApiResponse.fail("댓글 좋아요 실패");
+        }
+    }
+    @DeleteMapping("/comment/unlike")
+    public ApiResponse<Void> unlikeComment(
+            @RequestParam long commentId,
+            HttpSession session){
+        long userId = (Long) session.getAttribute("userId");
+
+        if(likeService.deletelikeComment(commentId,userId)){
+            return ApiResponse.success("댓글 좋아요 취소 성공");
+        }else {
+            return ApiResponse.fail("댓글 좋아요 취소 실패");
+        }
+    }
 }

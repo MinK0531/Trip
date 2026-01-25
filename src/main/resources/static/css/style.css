@@ -523,7 +523,21 @@ html {
     background: gray;
 }
 
+.feed-dots .dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
 
+.feed-dots .dot.active {
+    width: 18px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 0 4px rgba(0,0,0,0.2);
+}
 .image-upload{
     width: 50px;
     height: 50px;
@@ -736,7 +750,7 @@ main {
 }
 
 .tab-item.active {
-    background-color: #f8f9fa; /* 선택된 느낌 */
+    background-color: #f8f9fa;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
@@ -779,7 +793,162 @@ main {
     -webkit-text-stroke-width: 0.9px;
 }
 
-.like-count-text {
+.count-text {
     font-size: 18px;
     font-weight: 400;
+}
+
+
+#postDetailModal {
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-out;
+}
+
+.modal-content-fixed {
+    width: 1000px;
+    height: 600px;
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 1000px) {
+    .modal-content-fixed {
+        width: 95vw;
+        height: 80vh;
+    }
+}
+
+.vertical-location {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-height: 300px;
+
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    margin: auto 0;
+    opacity: 0.9;
+    font-family: 'Pretendard', sans-serif;
+    transition: font-size 0.2s ease;
+}
+.ticket-sidebar {
+    width: 90px;
+    background-color: #4A72FF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.5rem 0;
+    color: white;
+    box-shadow: inset -5px 0 15px rgba(0,0,0,0.1);
+}
+
+.vertical-location {
+    writing-mode: horizontal-tb;
+    transform: rotate(-90deg);
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.9;
+    font-family: 'Pretendard', sans-serif;
+}
+
+.barcode-deco {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 20px;
+    opacity: 0.5;
+}
+
+
+.reply-container {
+    position: relative;
+    padding-left: 3rem;
+    margin-top: 1rem;
+}
+.reply-container::before {
+    content: "";
+    position: absolute;
+    left: 1.2rem;
+    top: -1rem;
+    width: 1.2rem;
+    height: 2rem;
+    border-left: 2px solid #e5e7eb;
+    border-bottom: 2px solid #e5e7eb;
+    border-bottom-left-radius: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar { width: 4px; }
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #dbdbdb;
+    border-radius: 10px;
+}
+.img{
+    width: 450px;
+    height: 600px;
+    flex-shrink: 0;
+}
+
+.modal-content-fixed {
+    width: 1000px;
+    height: 600px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background-color: white;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content-fixed > .flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+#modalCommentList {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.comment-bubble {
+    background: #fff;
+    padding: 10px 14px;
+    border-radius: 18px;
+    border-top-left-radius: 2px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    border: 1px solid #f0f0f0;
+}
+
+.modal-dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+.modal-dot.active {
+    width: 18px;
+    border-radius: 10px;
+    background: #fff;
+}
+.blue{
+    background-color: #4A72FF;
+}
+#modalCommentList {
+    min-height: 400px;
 }

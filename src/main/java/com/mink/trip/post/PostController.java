@@ -29,6 +29,16 @@ public class PostController {
         return "/post/timeline";
     }
 
+    @GetMapping("/detail_popup")
+    public String detail_popup(Model model
+            ,HttpSession session) {
+        long userId = (Long) session.getAttribute("userId");
+        List<PostDetail> postList = postService.getPostList(userId);
+
+        model.addAttribute("postList", postList);
+
+        return "/post/popup_detail";
+    }
 
     @GetMapping("/create")
     public String map(){

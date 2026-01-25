@@ -1,5 +1,6 @@
 package com.mink.trip.post.dto;
 
+import com.mink.trip.comment.dto.CommentDetail;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,4 +33,7 @@ public class PostDetail {
 
     private LocalDateTime createdAt;
     private List<PostImageDetail> imageList;
+
+    private int commentCount;
+    private List<CommentDetail> commentList;
 }

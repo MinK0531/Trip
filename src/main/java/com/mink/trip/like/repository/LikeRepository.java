@@ -10,4 +10,10 @@ public interface LikeRepository extends JpaRepository<Like, LikeId> {
     public int countByPostId(long postId);
     public boolean existsByPostIdAndUserId (long postId, long userId);
     public void deleteByPostId(long postId);
+
+    int countByCommentId(long commentId);
+    boolean existsByCommentIdAndUserId(long commentId, long userId);
+    void deleteByCommentId(long commentId);
+
+
 }

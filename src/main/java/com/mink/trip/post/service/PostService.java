@@ -1,5 +1,7 @@
 package com.mink.trip.post.service;
 
+import com.mink.trip.comment.dto.CommentDetail;
+import com.mink.trip.comment.service.CommentService;
 import com.mink.trip.common.FileManager;
 import com.mink.trip.country.domain.Country;
 import com.mink.trip.country.repository.CountryRepository;
@@ -28,6 +30,7 @@ public class PostService {
     private final UserService userService;
     private  final LikeService likeService;
     private final CountryRepository countryRepository;
+    private final CommentService commentService;
 
     public boolean createPost(long userId,
                               long countryId,
@@ -97,6 +100,7 @@ public class PostService {
             String countryName = countryRepository.findById(post.getCountryId())
                     .map(Country::getCountryName)
                     .orElse("알 수 없는 나라");
+            List<CommentDetail> commentList = commentService.getCommentList(post.getId());
 
             PostDetail postDetail = PostDetail.builder()
                     .id(post.getId())
@@ -113,6 +117,8 @@ public class PostService {
                     .longitude(post.getLongitude())
                     .likeCount(likeCount)
                     .isLike(isLike)
+                    .commentCount(commentList.size())
+                    .commentList(commentList)
                     .createdAt(post.getCreatedAt())
                     .imageList(imageDetails)
                     .build();
