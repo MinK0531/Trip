@@ -47,6 +47,25 @@
                     <div id="modalCommentList" class="flex-1 overflow-y-auto p-3 space-y-5 custom-scroll bg-gray-50/30">
                     </div>
 
+                    <div class="px-4 py-2 border-t bg-white flex items-center gap-2">
+                        <button type="button" id="modalLikeBtn" class="flex items-center gap-1.5 group  ml-1">
+                            <i id="modalLikeIcon" class="bi bi-heart text-2xl transition-transform active:scale-125"></i>
+                            <span id="modalLikeCount" class="text-sm font-bold text-gray-700">0</span>
+                        </button>
+                        <button type="button" class="flex items-center gap-1.5 group ml-2">
+                            <i  class="bi bi-share text-2xl transition-transform active:scale-125"></i>
+                            <span class="text-sm font-bold text-gray-700">0</span>
+                        </button>
+                        <button type="button" class="flex items-center gap-1.5 group ml-2">
+                            <i  class="bi bi-send text-2xl transition-transform active:scale-125"></i>
+                            <span  class="text-sm font-bold text-gray-700">0</span>
+                        </button>
+                        <button type="button" class="flex items-center gap-1.5 group poin">
+                            <i  class="bi bi-bookmark text-2xl transition-transform active:scale-125"></i>
+                            <span  class="text-sm font-bold text-gray-700">0</span>
+                        </button>
+                    </div>
+
                     <div class="p-3 border-t bg-white shrink-0">
                         <div class="flex items-center gap-3">
                             <input type="hidden" id="modalPostId">
@@ -152,14 +171,14 @@
 
                 if (parent.replies.length > 0) {
                     parentHtml += `
-                    <button class="btn-toggle-replies ml-11 text-[10px] text-gray-500 font-bold flex items-center gap-1" data-id="${parent.id}">
+                    <button class="btn-toggle-replies ml-5 text-[10px] text-gray-500 font-bold flex items-center gap-1" data-id="${parent.id}">
                         ── 답글 ${parent.replies.length}개 보기
                     </button>`;
                 }
 
                 parent.replies.forEach(reply => {
                     parentHtml += `
-                    <div class="reply-item hidden flex gap-3 ml-11 mt-2" data-parent="${parent.id}">
+                    <div class="reply-item hidden flex gap-3 ml-5 mt-2" data-parent="${parent.id}">
                         <div class="w-7 h-7 rounded-full bg-gray-100 border flex-shrink-0 flex items-center justify-center">
                             <i data-lucide="user" class="w-3 h-3 text-gray-400"></i>
                         </div>
@@ -203,9 +222,17 @@
                 const nickname = $card.find("p.font-bold").first().text();
                 const country = $card.find(".flex.items-center.gap-2.text-sm span:first-of-type").text();
                 const city = $card.find(".text-blue-900.text-sm").text() || "";
-                const music = $card.find(".music-info-text").text() || "라라랜드 - another day of sun";
+                const music = $card.find(".music-info-text").text()||"";
                 const postContent = $card.find(".flex.gap-2.text-m span:last-child").text();
-
+                const likeCount = $card.find(".count-text").first().text();
+                const isLike = $card.find(".btn-like-icon").hasClass("unlike-btn");
+                $("#modalLikeCount").text(likeCount);
+                const $icon = $("#modalLikeIcon");
+                if (isLike) {
+                    $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");
+                } else {
+                    $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");
+                }
                 $("#modalNickname").text(nickname);
                 $("#modalLocationSidebar").text(`${country} ${city ? '- ' + city : ''}`);
                 $("#modalMusic").text(music);
@@ -223,7 +250,7 @@
 
                 const $commentArea = $("#modalCommentList").empty();
                 $commentArea.append(`
-                    <div class="flex gap-3 mb-6">
+                    <div class="flex gap-3 mb-2">
                         <div class="w-8 h-8 rounded-full bg-orange-100 flex-shrink-0 border border-orange-200 flex items-center justify-center">
                             <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
                         </div>
@@ -251,6 +278,7 @@
                         $("#postDetailModal").addClass("hidden").removeClass("flex");
                         $("body").css("overflow", "auto");
                         cancelReplyMode();
+                        location.reload();
                     }, 200);
                 }
             });
@@ -335,6 +363,7 @@
                 , data:{"commentId": commentId}
                 , success:function(response) {
                     if(response.result == "success") {
+
                         location.reload();
                     } else {
                         alert("좋아요 취소 실패!");
@@ -346,6 +375,40 @@
 
             });
 
+        });
+        $(document).on("click", "#modalLikeBtn", function() {
+            const $icon = $("#modalLikeIcon");
+            const $count = $("#modalLikeCount");
+
+            const isLiked = $icon.hasClass("bi-heart-fill");
+            const url = isLiked ? "/post/unlike" : "/post/like";
+            const type = isLiked ? "delete" : "post";
+
+            $.ajax({
+                type: type,
+                url: url,
+                data: { "postId": currentPostId },
+                success: function(response) {
+                    if (response.result === "success") {
+                        if (isLiked) {
+                            $icon
+                                .removeClass("bi-heart-fill text-danger")
+                                .addClass("bi-heart text-dark");
+                            $count.text(parseInt($count.text(), 10) - 1);
+                        } else {
+                            $icon
+                                .removeClass("bi-heart text-dark")
+                                .addClass("bi-heart-fill text-danger");
+                            $count.text(parseInt($count.text(), 10) + 1);
+                        }
+                    } else {
+                        alert("처리 실패");
+                    }
+                },
+                error: function() {
+                    alert("통신 에러");
+                }
+            });
         });
     </script>
 </th:block>

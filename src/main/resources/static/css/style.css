@@ -809,12 +809,12 @@ main {
     height: 600px;
     display: flex;
     flex-direction: row;
+    align-items: stretch;
     background-color: white;
     border-radius: 30px;
     overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
-
 @media (max-width: 1000px) {
     .modal-content-fixed {
         width: 95vw;
@@ -950,5 +950,8 @@ main {
     background-color: #4A72FF;
 }
 #modalCommentList {
-    min-height: 400px;
+    min-height: 300px;
+}
+.poin{
+    margin-left: 220px;
 }
