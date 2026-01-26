@@ -17,7 +17,6 @@ import java.util.Map;
 public class CityRestController {
 
     private final RestTemplate restTemplate;
-    private final String OPENCAGE_KEY = "YOUR_API_KEY"; // OpenCageData API Key
 
     public CityRestController(RestTemplateBuilder builder) {
         this.restTemplate = builder.build();
@@ -26,7 +25,7 @@ public class CityRestController {
     @PostMapping("/list")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getCitiesAndCoords(@RequestBody CityRequest request) {
         String country = request.getCountry();
-        String city = request.getCity(); // 선택하지 않으면 null
+        String city = request.getCity();
 
         Map<String, Object> result = new HashMap<>();
 

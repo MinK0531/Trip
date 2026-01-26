@@ -53,6 +53,13 @@
                                 </div>
                         </div>
                     </div>
+                    <div class="absolute right-4 top-1/2 -translate-y-1/2 z-20">
+                        <i th:if="${post.userId == session.userId}"
+                           class="bi bi-three-dots-vertical more-btn text-blue-600 cursor-pointer text-xl"
+                           data-toggle="modal"
+                           data-target="#moreModal"
+                           th:data-post-id="${post.id}"></i>
+                    </div>
                 </div>
 
                 <div class="relative bg-gray-50 aspect-square overflow-hidden">
@@ -131,10 +138,19 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade create-choice-modal" id="moreModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <button type="button" class="btn-choice">수정하기</button>
+                        <button type="button" class="btn-choice">삭제하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
     <th:block th:replace="post/popup_detail :: PopupDetail"></th:block>
 
-    </script>
     <script>
         $(function () {
             $(".image-slider").each(function () {
