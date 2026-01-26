@@ -53,6 +53,20 @@ public class PostRestController {
             return ApiResponse.fail("게시물 등록 실패");
         }
     }
+//    public ApiResponse<Void> remove(
+//            @RequestParam long countryId,
+//            @RequestParam(required = false) String cityName,
+//            @RequestParam String contents,
+//            @RequestParam(required = false) String atmosphere,
+//            @RequestParam(required = false) String placeName,
+//            @RequestParam(required = false) String musicUrl,
+//            @RequestParam(required = false, defaultValue = "0.0") double latitude,
+//            @RequestParam(required = false, defaultValue = "0.0") double longitude,
+//            @RequestParam List<MultipartFile> images,
+//            HttpServletRequest request){
+//
+//
+//    }
 
 }
 
