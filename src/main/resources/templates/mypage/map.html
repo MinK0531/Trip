@@ -8,54 +8,56 @@
     <div id="chartdiv">
         <div class="profile-card-container">
             <div class="boarding-pass">
-                <div class="top-stripe" >
-                    <img src="/img/top-stripe.png"
-                         alt="프로필 머리">
+                <div class="top-stripe">
+                    <img src="/img/top-stripe.png" alt="프로필 머리">
                 </div>
 
                 <div class="pass-content">
                     <div class="top-section">
-                        <div class="profile-pic-wrapper ">
+                        <div class="profile-pic-wrapper">
                             <img src="/img/profile.png" alt="Profile" class="profile-pic">
                         </div>
 
                         <div>
-                            <button class="edit-btn ">프로필 편집</button>
+                            <button class="edit-btn">프로필 편집</button>
                             <div class="plane-icon">
                                 <svg viewBox="0 0 24 24">
                                     <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
                                 </svg>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="flight-info-row">
-                        <div class="airport-code"><span th:text="${session.userCountry}" class="font-weight-bold"></span></div>
+                        <div class="airport-code">
+                            <span th:text="${session.userCountry}" class="font-weight-bold"></span>
+                        </div>
                         <div class="flight-details">
-                            <div class="detail-item ">
+                            <div class="detail-item">
                                 <div class="label">FLIGHT</div>
-                                <div class="value">5</div>
+                                <div class="value" th:text="${postCount}">0</div>
                             </div>
                             <div class="detail-item">
                                 <div class="label">GATE</div>
-                                <div class="value">2</div>
+                                <div class="value" th:text="${wishlistCount}">0</div>
                             </div>
                         </div>
                     </div>
 
+                    <h1 class="departure" th:if="${session.userRegion != null}"
+                        th:text="${session.userRegion}"></h1>
+                    <h1 class="departure" th:if="${session.userRegion == null}">WHERE TO NEXT?</h1>
 
 
-                    <h1 class="departure"
-                        th:text="${session.userRegion != null ? session.userRegion : 'WHERE TO NEXT?'}">
-                    </h1>
-                    <p class="airline-name">항공사 이름 :<span th:text="${session.userNickName}" class="font-weight-bold"></span></p>
+                    <p class="airline-name">항공사 이름 :
+                        <span th:text="${session.userNickName}" class="font-weight-bold"></span>
+                    </p>
 
                     <div class="divider"></div>
 
                     <div class="bottom-section">
                         <div class="user-stats">
-                            <h2 class="comment-title">한마디..</h2>
+                            <h2 class="comment-title">한마디.</h2>
                             <div class="stat-row">
                                 <span class="stat-label">Following</span>
                                 <span class="stat-count">123</span>
@@ -77,23 +79,23 @@
         </div>
     </div>
 
-    <div id="modal-overlay" onclick="closeModal()"></div>
-    <div id="modal">
-        <h3 id="modal-title">새로운 핀 정보</h3>
-        <p id="modal-desc"></p>
-        <button class="close-btn" onclick="closeModal()">닫기</button>
-    </div>
+    <th:block th:replace="post/popup_detail :: PopupDetail"></th:block>
+    <th:block th:replace="post/popup_detail :: PopupDetailScript"></th:block>
+
+    <th:block th:replace="layouts/create :: createPopup"></th:block>
+    <th:block th:replace="layouts/create :: createPopupScript"></th:block>
 </div>
 <script layout:fragment="script">
+
     let COUNTRY_MAP = {};
 
     $.ajax({
         url: "/country/list",
         type: "GET",
         dataType: "json",
-        success: function (data) {
-            $.each(data, function (_, country) {
-                COUNTRY_MAP[country.countryCode] = country.countryName;
+        success: function (response) {
+            $.each(response, function (_, c) {
+                COUNTRY_MAP[c.countryCode] = { id: c.id, name: c.countryName, en: c.countryNameEn };
             });
             initMap();
         },
@@ -101,6 +103,67 @@
             console.error("나라 목록 로딩 실패");
         }
     });
+
+
+    function setModalPlaceInfo(cityName, placeName, atmosphere) {
+        const city = (cityName || "").toString().trim();
+        const place = (placeName || "").toString().trim();
+        const atmos = (atmosphere || "").toString().trim();
+
+        if (city || place || atmos) {
+            $("#modalCityName").text(city).toggle(!!city);
+            $("#modalPlaceName").text(place).toggle(!!place);
+            $("#modalAtmosphere").text(atmos).toggle(!!atmos);
+            $("#modalPlaceInfo").removeClass("hidden");
+        } else {
+            $("#modalPlaceInfo").addClass("hidden");
+        }
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function buildLocationText(p) {
+        let locationText = (p.locationText || "").toString().trim();
+
+        if (!locationText) {
+            const country = (p.countryName || p.country || p.countryCode || "").toString().trim();
+            const city = (p.cityName || p.city || "").toString().trim();
+            locationText = [country, city].filter(Boolean).join(" - ");
+        }
+
+        locationText = locationText.replace(/null/gi, "").replace(/\s+-\s+$/, "").trim();
+
+        return locationText;
+    }
+
+    function setModalBasicFields(p) {
+        const nickname = (p.nickName || "").toString();
+        $("#modalNickname").text(nickname);
+
+        const locationText = buildLocationText(p);
+        $("#modalLocationSidebar").text(locationText);
+        if (typeof adjustVerticalFont === "function") adjustVerticalFont();
+
+        $("#modalMusic").text((p.musicUrl || "").toString());
+
+        $("#modalLikeCount").text(p.likeCount != null ? p.likeCount : 0);
+
+        const liked = !!(p.isLike ?? p.like);
+
+        const $icon = $("#modalLikeIcon");
+        if (liked) {
+            $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");
+        } else {
+            $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");
+        }
+
+        setModalPlaceInfo(p.cityName, p.placeName, p.atmosphere);
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+
+
 
     function initMap() {
         am5.ready(function () {
@@ -120,7 +183,6 @@
                 })
             );
 
-            /* ===== 바다 ===== */
             const backgroundSeries = chart.series.push(
                 am5map.MapPolygonSeries.new(root, {})
             );
@@ -135,7 +197,6 @@
                 geometry: am5map.getGeoRectangle(90, 180, -90, -180)
             });
 
-            /* ===== 경도/위도 그리드 ===== */
             const graticuleSeries = chart.series.push(
                 am5map.GraticuleSeries.new(root, {})
             );
@@ -166,11 +227,21 @@
 
             polygonSeries.events.on("datavalidated", function () {
                 am5.array.each(polygonSeries.dataItems, function (item) {
-                    const id = item.get("id");
-                    if (COUNTRY_MAP[id]) {
-                        item.set("name", COUNTRY_MAP[id]);
-                    }
+                    const code = item.get("id");
+                    if (COUNTRY_MAP[code]) item.set("name", COUNTRY_MAP[code].name);
                 });
+            });
+
+            polygonSeries.mapPolygons.template.events.on("dblclick", function (ev) {
+                const dataItem = ev.target.dataItem;
+                if (!dataItem) return;
+
+                const code = dataItem.get("id");
+                const meta = COUNTRY_MAP[code];
+                if (!meta) return;
+
+                const geoPoint = chart.invert(ev.point);
+                openCreatePostWithCountry(meta.id, geoPoint);
             });
 
             const pointSeries = chart.series.push(
@@ -184,37 +255,19 @@
                     stroke: am5.color(0xffffff),
                     strokeWidth: 2,
                     cursorOverStyle: "pointer",
-                    tooltipText: "클릭하여 정보 보기"
+                    tooltipText: "클릭하여 게시물 보기"
                 });
 
                 circle.events.on("click", function (ev) {
                     const data = ev.target.dataItem.dataContext;
-                    openModal(
-                        data.title,
-                        `위도: ${data.latitude.toFixed(2)}<br>경도: ${data.longitude.toFixed(2)}`
-                    );
+                    if (!data || !data.postId) return;
+                    openPostDetailFromMap(data.postId);
                 });
 
                 return am5.Bullet.new(root, { sprite: circle });
             });
 
-            chart.events.on("dblclick", function (ev) {
-                const geoPoint = chart.invert(ev.point);
-                if (!geoPoint) return;
-
-                pointSeries.data.push({
-                    geometry: {
-                        type: "Point",
-                        coordinates: [
-                            geoPoint.longitude,
-                            geoPoint.latitude
-                        ]
-                    },
-                    title: "내가 추가한 장소",
-                    latitude: geoPoint.latitude,
-                    longitude: geoPoint.longitude
-                });
-            });
+            loadPostMarkers(pointSeries);
 
             chart.animate({
                 key: "rotationX",
@@ -228,16 +281,121 @@
         });
     }
 
-    function openModal(title, desc) {
-        $("#modal-title").html(title);
-        $("#modal-desc").html(desc);
-        $("#modal, #modal-overlay").show();
+    function loadPostMarkers(pointSeries) {
+        $.ajax({
+            url: "/mypage/api/posts/points",
+            type: "GET",
+            dataType: "json",
+            success: function (response) {
+                let list = [];
+                if (response && response.data) list = response.data;
+
+                const data = [];
+
+                for (let i = 0; i < list.length; i += 1) {
+                    const x = list[i];
+                    if (x.latitude == null || x.longitude == null) continue;
+
+                    data.push({
+                        postId: x.postId,
+                        geometry: { type: "Point", coordinates: [Number(x.longitude), Number(x.latitude)] }
+                    });
+                }
+
+                pointSeries.data.setAll(data);
+            },
+            error: function () {
+                console.error("게시물 핀 로딩 실패");
+            }
+        });
     }
 
-    function closeModal() {
-        $("#modal, #modal-overlay").hide();
+    function openPostDetailFromMap(postId) {
+        if (!postId) return;
+
+        $.ajax({
+            url: "/mypage/api/posts/detail",
+            type: "GET",
+            data: { postId },
+            success: function (res) {
+                if (!res || res.result !== "success") {
+                    alert(res?.message || "게시물 조회 실패");
+                    return;
+                }
+
+                const p = res.data;
+
+                currentPostId = p.id;
+                $("#modalPostId").val(p.id);
+
+                setModalBasicFields(p);
+
+                const $wrapper = $("#modalImageWrapper").empty();
+                if (p.imageList && p.imageList.length > 0) {
+                    p.imageList.forEach(img => {
+                        $wrapper.append(`
+                        <div class="swiper-slide">
+                            <img src="${img.imagePath}"
+                                 class="w-[450px] h-full object-cover">
+                        </div>
+                    `);
+                    });
+                }
+
+                ensureModalSwiper();
+                modalSwiper.update();
+                modalSwiper.slideTo(0, 0);
+
+                $("#modalCommentList").empty().append(`
+                <div class="flex gap-3 mb-3">
+                    <div class="w-8 h-8 rounded-full bg-orange-100 border border-orange-200 flex items-center justify-center">
+                        <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs">
+                            <span class="font-bold mr-2">${p.nickName}</span>
+                            ${p.contents || ""}
+                        </p>
+                        <p class="text-[10px] text-gray-400">방금 전</p>
+                    </div>
+                </div>
+            `);
+
+                loadComments(p.id);
+
+                $("#postDetailModal").removeClass("hidden").addClass("flex");
+                setTimeout(() => {
+                    $("#postDetailModal > div")
+                        .removeClass("scale-95")
+                        .addClass("scale-100");
+                }, 10);
+
+                $("body").css("overflow", "hidden");
+                lucide.createIcons();
+            },
+            error: function () {
+                alert("게시물 상세 조회 에러");
+            }
+        });
     }
+
+    function openCreatePostWithCountry(countryId, geoPoint) {
+        if (geoPoint && geoPoint.latitude != null && geoPoint.longitude != null) {
+            $("#latitude").val(geoPoint.latitude);
+            $("#longitude").val(geoPoint.longitude);
+        }
+
+        $("#postCreateModal").modal({ backdrop: "static", keyboard: false });
+
+        $("#country option").each(function () {
+            if ($(this).data("id") === countryId) {
+                $(this).prop("selected", true);
+            }
+        });
+
+        $("#country").trigger("change");
+    }
+
 </script>
 
-</body>
 </html>

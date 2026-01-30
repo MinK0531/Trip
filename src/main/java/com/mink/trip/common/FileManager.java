@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 public class FileManager {
 
-    public final static String FILE_UPLOAD_PATH = "C:\\Users\\B-1\\KMK\\upload";
+    public final static String FILE_UPLOAD_PATH = "D:\\KMK\\SpringProject\\upload\\trip";
 
     public static String saveFile(long userId, MultipartFile file) {
         if (file == null) {
@@ -39,5 +39,26 @@ public class FileManager {
         }
 
         return "/images" + directoryName + "/" + file.getOriginalFilename();
+    }
+    public static boolean removeFile(String imagePath) {
+
+        if(imagePath == null) {
+            return false;
+        }
+
+        String fullFilePath = FILE_UPLOAD_PATH + imagePath.replace("/images", "");
+
+        Path path = Paths.get(fullFilePath);
+        Path directoryPath = path.getParent();
+
+        try {
+            Files.delete(path);
+            Files.delete(directoryPath);
+
+        } catch (IOException e) {
+            return false;
+        }
+
+        return true;
     }
 }

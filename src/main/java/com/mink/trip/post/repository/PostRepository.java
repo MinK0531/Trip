@@ -9,5 +9,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
+    public List<Post> findByUserIdOrderByIdDesc(long userId);
+    public int countByUserId(Long userId);
 
 }

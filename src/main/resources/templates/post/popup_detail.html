@@ -17,16 +17,18 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="relative bg-black flex-shrink-0 group img">
-                    <div id="modalImageContainer" class="flex h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+                    <div class="swiper modal-swiper w-full h-full">
+                        <div class="swiper-wrapper" id="modalImageWrapper"></div>
+                        <div class="swiper-pagination"></div>
                     </div>
-                    <div id="modalImageDots" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-10"></div>
                 </div>
 
                 <div class="flex-1 flex flex-col bg-white h-full min-w-0">
                     <div class="h-9 blue shrink-0"></div>
 
-                    <div class="p-3 ml-2 border-b flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10 shrink-0">
+                    <div class="relative p-3 ml-2 border-b flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10 shrink-0">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-100 to-orange-200 border border-orange-200 overflow-hidden flex items-center justify-center">
                                 <i data-lucide="user" class="w-5 h-5 text-orange-400"></i>
@@ -38,8 +40,24 @@
                                     <span id="modalMusic">라라랜드 - another day of sun</span>
                                 </p>
                             </div>
+
                         </div>
-                        <button id="closeModal" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <div id="modalPlaceInfo"
+                             class="hidden absolute right-0 top-0 h-full w-1/2 bg-blue-50 border-l border-b border-blue-200 polygon z-20">
+                            <div class="h-full flex flex-col justify-center pl-12 pr-4">
+                                <div class="space-y-1 gap-1.5">
+                                    <div class="flex gap-1.5 items-center">
+                                        <i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i>
+                                        <p id="modalCityName" class="font-bold text-blue-900 text-sm"></p>
+                                    </div>
+                                    <p id="modalPlaceName" class="ml-3 text-blue-600 text-xs"></p>
+                                    <p id="modalAtmosphere" class="ml-4 text-blue-500 text-[10px]"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="closeModal"
+                                class="relative z-30 p-2  rounded-full transition-colors">
                             <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                         </button>
                     </div>
@@ -91,11 +109,30 @@
     </div>
 </th:block>
 <th:block th:fragment="PopupDetailScript">
-
     <script>
-
         let currentPostId = null;
         let selectedParentId = null;
+
+        let modalSwiper = null;
+
+        function ensureModalSwiper() {
+            if (modalSwiper) return;
+            modalSwiper = new Swiper(".modal-swiper", {
+                slidesPerView: 1,
+                spaceBetween: 0,
+                pagination: {
+                    el: ".modal-swiper .swiper-pagination",
+                    clickable: true
+                },
+                keyboard: { enabled: true }
+            });
+        }
+
+        function destroyModalSwiper() {
+            if (!modalSwiper) return;
+            modalSwiper.destroy(true, true);
+            modalSwiper = null;
+        }
 
         function adjustVerticalFont() {
             const el = document.getElementById("modalLocationSidebar");
@@ -123,73 +160,103 @@
 
             comments.forEach(c => {
                 map[c.id] = { ...c, replies: [] };
-                if (!c.parentId) {
-                    roots.push(map[c.id]);
-                }
+                if (!c.parentId) roots.push(map[c.id]);
             });
 
             comments.forEach(c => {
-                if (c.parentId && map[c.parentId]) {
-                    map[c.parentId].replies.push(map[c.id]);
-                }
+                if (c.parentId && map[c.parentId]) map[c.parentId].replies.push(map[c.id]);
             });
 
             return roots;
         }
 
-
         function renderComments(comments) {
             const $list = $("#modalCommentList");
-
             $list.find(".comment-item-container").remove();
 
             const grouped = groupComments(comments);
 
             grouped.forEach(parent => {
+                const deleted = !!(parent.isDeleted || parent.deleted); // 둘 다 대응
+                const likeCount = (parent.likeCount != null ? parent.likeCount : 0);
+                const isLike = !!(parent.isLike ?? parent.like ?? parent.liked);
+
+                const heartClass = isLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";
+
                 let parentHtml = `
-                <div class="comment-item-container space-y-2" data-id="${parent.id}">
-                    <div class="flex gap-3">
-                        <div class="w-8 h-8 rounded-full bg-orange-100 border border-orange-200 flex-shrink-0 flex items-center justify-center">
-                             <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-xs">
-                                <span class="font-bold mr-2 text-sm">${parent.nickName}</span>
-                                ${parent.deleted ? '<span class="italic text-gray-400">삭제된 댓글입니다.</span>' : parent.comments}
-                            </p>
-                            <div class="flex gap-4 mt-1 items-center">
-                                <span class="text-[10px] text-gray-400">방금 전</span>
-                                ${!parent.deleted ? `
-                                <button class="btn-reply text-[10px] font-bold text-gray-500 hover:text-blue-500"
-                                    data-id="${parent.id}"
-                                    data-nick="${parent.nickName}">
-                                    답글 달기
-                                </button>` : ``}
-                            </div>
-                        </div>
-                    </div>`;
+      <div class="comment-item-container space-y-2" data-id="${parent.id}">
+        <div class="flex gap-3">
+          <div class="w-8 h-8 rounded-full bg-orange-100 border border-orange-200 flex-shrink-0 flex items-center justify-center">
+            <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
+          </div>
+
+          <div class="flex-1">
+            <p class="text-xs">
+              <span class="font-bold mr-2 text-sm">${parent.nickName}</span>
+              ${deleted ? '<span class="italic text-gray-400">삭제된 댓글입니다.</span>' : parent.comments}
+            </p>
+
+            <div class="flex gap-4 mt-1 items-center">
+              <span class="text-[10px] text-gray-400">방금 전</span>
+
+              ${!deleted ? `
+                <button class="btn-reply text-[10px] font-bold text-gray-500 hover:text-blue-500"
+                        data-id="${parent.id}" data-nick="${parent.nickName}">
+                  답글 달기
+                </button>` : ``}
+
+              <!-- ✅ 댓글 좋아요 버튼 -->
+              <button type="button"
+                      class="btn-comment-like flex items-center gap-1 ml-auto"
+                      data-comment-id="${parent.id}">
+                <i class="bi ${heartClass} text-lg transition-transform active:scale-125"></i>
+                <span class="comment-like-count text-xs font-bold text-gray-600">${likeCount}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+    `;
 
                 if (parent.replies.length > 0) {
                     parentHtml += `
-                    <button class="btn-toggle-replies ml-5 text-[10px] text-gray-500 font-bold flex items-center gap-1" data-id="${parent.id}">
-                        ── 답글 ${parent.replies.length}개 보기
-                    </button>`;
+        <button class="btn-toggle-replies ml-5 text-[10px] text-gray-500 font-bold flex items-center gap-1"
+                data-id="${parent.id}">
+          ── 답글 ${parent.replies.length}개 보기
+        </button>`;
                 }
 
                 parent.replies.forEach(reply => {
+                    const rDeleted = !!(reply.isDeleted || reply.deleted);
+                    const rLikeCount = (reply.likeCount != null ? reply.likeCount : 0);
+                    const rIsLike = !!(reply.isLike ?? reply.like ?? reply.liked);
+                    const rHeartClass = rIsLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";
+
                     parentHtml += `
-                    <div class="reply-item hidden flex gap-3 ml-5 mt-2" data-parent="${parent.id}">
-                        <div class="w-7 h-7 rounded-full bg-gray-100 border flex-shrink-0 flex items-center justify-center">
-                            <i data-lucide="user" class="w-3 h-3 text-gray-400"></i>
-                        </div>
-                        <div class="flex-1">
-                            <p class="text-xs">
-                                <span class="font-bold mr-2">${reply.nickName}</span>
-                                ${reply.comments}
-                            </p>
-                            <div class="text-[10px] text-gray-400 mt-1">방금 전</div>
-                        </div>
-                    </div>`;
+        <div class="reply-item hidden flex gap-3 ml-5 mt-2" data-parent="${parent.id}">
+          <div class="w-7 h-7 rounded-full bg-gray-100 border flex-shrink-0 flex items-center justify-center">
+            <i data-lucide="user" class="w-3 h-3 text-gray-400"></i>
+          </div>
+
+          <div class="flex-1">
+            <p class="text-xs">
+              <span class="font-bold mr-2">${reply.nickName}</span>
+              ${rDeleted ? '<span class="italic text-gray-400">삭제된 댓글입니다.</span>' : reply.comments}
+            </p>
+
+            <div class="flex items-center gap-2 mt-1">
+              <div class="text-[10px] text-gray-400">방금 전</div>
+
+              <!-- ✅ 대댓글 좋아요 버튼 -->
+              <button type="button"
+                      class="btn-comment-like flex items-center gap-1 ml-auto"
+                      data-comment-id="${reply.id}">
+                <i class="bi ${rHeartClass} text-lg transition-transform active:scale-125"></i>
+                <span class="comment-like-count text-xs font-bold text-gray-600">${rLikeCount}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
                 });
 
                 parentHtml += `</div>`;
@@ -204,62 +271,95 @@
                 url: "/post/comment/list",
                 type: "GET",
                 data: { postId: postId },
-                success: function(res) {
-                    renderComments(res);
-                },
-                error: function() {
-                    console.error("댓글 로드 실패");
-                }
+                success: function(response) { renderComments(response); },
+                error: function() { console.error("댓글 로드 실패"); }
             });
         }
 
+        function renderModalImagesFromCard($card) {
+            const $wrapper = $("#modalImageWrapper").empty();
+
+            let $images = $card.find(".feed-swiper img");
+            if ($images.length === 0) $images = $card.find(".image-slider img");
+
+            $images.each(function() {
+                const src = $(this).attr("src");
+                $wrapper.append(`
+              <div class="swiper-slide">
+                <img src="${src}" class="w-[450px] h-full object-cover flex-shrink-0">
+              </div>
+            `);
+            });
+
+            ensureModalSwiper();
+            modalSwiper.update();
+            modalSwiper.slideTo(0, 0);
+        }
 
         $(function() {
-            $(document).on("click", ".bi-chat", function() {
-                const $card = $(this).closest(".bg-white.rounded-xl");
-                currentPostId = $card.find(".image-slider").data("post-id");
 
-                const nickname = $card.find("p.font-bold").first().text();
-                const country = $card.find(".flex.items-center.gap-2.text-sm span:first-of-type").text();
-                const city = $card.find(".text-blue-900.text-sm").text() || "";
-                const music = $card.find(".music-info-text").text()||"";
-                const postContent = $card.find(".flex.gap-2.text-m span:last-child").text();
+            $(document).on("click", ".open-post-detail, .bi-chat", function() {
+                const $card = $(this).closest(".bg-white.rounded-xl");
+
+                const $openBtn = $(this).closest(".open-post-detail").length
+                    ? $(this).closest(".open-post-detail")
+                    : $card.find(".open-post-detail").first();
+
+                currentPostId = $openBtn.data("post-id") || $card.find("[data-post-id]").first().data("post-id");
+
+                const nickname = $openBtn.data("nickname") || $card.find("p.font-bold").first().text();
+                let locationText = ($openBtn.data("location") || "").toString();
+                locationText = locationText.replace(/null/gi, "").replace(/\s+-\s+$/, "").trim();
+
+                const postContent = $openBtn.data("content") || $card.find(".flex.gap-2.text-m span:last-child").text();
+
                 const likeCount = $card.find(".count-text").first().text();
                 const isLike = $card.find(".btn-like-icon").hasClass("unlike-btn");
+
                 $("#modalLikeCount").text(likeCount);
+
                 const $icon = $("#modalLikeIcon");
                 if (isLike) {
                     $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");
                 } else {
                     $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");
                 }
+
                 $("#modalNickname").text(nickname);
-                $("#modalLocationSidebar").text(`${country} ${city ? '- ' + city : ''}`);
-                $("#modalMusic").text(music);
+                $("#modalLocationSidebar").text(locationText);
                 adjustVerticalFont();
 
-                const $images = $card.find(".image-slider img");
-                const $container = $("#modalImageContainer").empty();
-                const $dots = $("#modalImageDots").empty();
+                const music = $card.find(".music-info-text").text() || "";
+                $("#modalMusic").text(music);
 
-                $images.each(function(i) {
-                    const src = $(this).attr("src");
-                    $container.append(`<img src="${src}" class="w-[450px] h-full object-cover snap-center flex-shrink-0">`);
-                    $dots.append(`<div class="modal-dot ${i === 0 ? 'active' : ''}"></div>`);
-                });
+                const $more = $card.find(".more-btn").first();
+                const cityName = ($more.data("city-name") || "").toString().trim();
+                const placeName = ($more.data("place-name") || "").toString().trim();
+                const atmosphere = ($more.data("atmosphere") || "").toString().trim();
+
+                if (cityName || placeName || atmosphere) {
+                    $("#modalCityName").text(cityName).toggle(!!cityName);
+                    $("#modalPlaceName").text(placeName).toggle(!!placeName);
+                    $("#modalAtmosphere").text(atmosphere).toggle(!!atmosphere);
+                    $("#modalPlaceInfo").removeClass("hidden");
+                } else {
+                    $("#modalPlaceInfo").addClass("hidden");
+                }
+
+                renderModalImagesFromCard($card);
 
                 const $commentArea = $("#modalCommentList").empty();
                 $commentArea.append(`
-                    <div class="flex gap-3 mb-2">
-                        <div class="w-8 h-8 rounded-full bg-orange-100 flex-shrink-0 border border-orange-200 flex items-center justify-center">
-                            <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-xs"><span class="font-bold mr-2 text-sm">${nickname}</span>${postContent}</p>
-                            <p class="text-[10px] text-gray-400">방금 전</p>
-                        </div>
-                    </div>
-                `);
+              <div class="flex gap-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-orange-100 flex-shrink-0 border border-orange-200 flex items-center justify-center">
+                  <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-xs"><span class="font-bold mr-2 text-sm">${nickname}</span>${postContent}</p>
+                  <p class="text-[10px] text-gray-400">방금 전</p>
+                </div>
+              </div>
+            `);
 
                 loadComments(currentPostId);
 
@@ -267,6 +367,7 @@
                 setTimeout(() => {
                     $("#postDetailModal > div").removeClass("scale-95").addClass("scale-100");
                 }, 10);
+
                 $("body").css("overflow", "hidden");
                 lucide.createIcons();
             });
@@ -278,22 +379,15 @@
                         $("#postDetailModal").addClass("hidden").removeClass("flex");
                         $("body").css("overflow", "auto");
                         cancelReplyMode();
+                        destroyModalSwiper();
                         location.reload();
                     }, 200);
                 }
             });
 
-            $("#modalImageContainer").on("scroll", function() {
-                const index = Math.round($(this).scrollLeft() / 450);
-                $(".modal-dot").removeClass("active").eq(index).addClass("active");
-            });
-
             $("#btnCommentSubmit").on("click", function() {
                 const content = $("#commentInput").val().trim();
-                if (!content) {
-                    alert("내용을 입력해주세요.");
-                    return;
-                }
+                if (!content) { alert("내용을 입력해주세요."); return; }
 
                 $.ajax({
                     url: "/post/comment/write",
@@ -303,8 +397,8 @@
                         comments: content,
                         parentId: selectedParentId
                     },
-                    success: function(res) {
-                        if (res.result === "success") {
+                    success: function(response) {
+                        if (response.result === "success") {
                             cancelReplyMode();
                             loadComments(currentPostId);
                         } else {
@@ -322,93 +416,84 @@
                 $("#commentInput").focus();
             });
 
-            $(document).on("click", ".btn-toggle-replies", function() {
+            $(document).on("click", ".btn-toggle-replies", function () {
                 const parentId = $(this).data("id");
-                const $replies = $(`.reply-item[data-parent='${parentId}']`);
+                const $replies = $(".reply-item[data-parent='" + parentId + "']");
                 const isHidden = $replies.first().hasClass("hidden");
 
                 $replies.toggleClass("hidden");
-                $(this).text(isHidden ? "── 답글 접기" : `── 답글 ${$replies.length}개 보기`);
+
+                if (isHidden) {
+                    $(this).text("── 답글 접기");
+                } else {
+                    $(this).text("── 답글 " + $replies.length + "개 보기");
+                }
             });
-        });
-        $(".like-btn").on("click", function() {
+            $(document).on("click", ".btn-comment-like", function () {
+                const $btn = $(this);
+                const commentId = Number($btn.data("comment-id"));
+                if (!commentId) return;
 
-            let postId = $(this).data("post-id");
+                const $icon = $btn.find("i.bi");
 
-            $.ajax({
-                type:"post"
-                , url:"/comment/like"
-                , data:{"commentId": commentId}
-                , success:function(response) {
-                    if(response.result == "success") {
-                        location.reload();
-                    } else {
-                        alert("좋아요 실패!");
-                    }
-                }
-                , error:function() {
-                    alert("좋아요 에러!");
-                }
+                const isLiked = $icon.hasClass("bi-heart-fill");
 
-            });
-
-        });
-        $(".unlike-btn").on("click", function() {
-
-            let postId = $(this).data("post-id");
-
-            $.ajax({
-                type:"delete"
-                , url:"/comment/unlike"
-                , data:{"commentId": commentId}
-                , success:function(response) {
-                    if(response.result == "success") {
-
-                        location.reload();
-                    } else {
-                        alert("좋아요 취소 실패!");
-                    }
-                }
-                , error:function() {
-                    alert("좋아요 취소 에러!");
-                }
-
-            });
-
-        });
-        $(document).on("click", "#modalLikeBtn", function() {
-            const $icon = $("#modalLikeIcon");
-            const $count = $("#modalLikeCount");
-
-            const isLiked = $icon.hasClass("bi-heart-fill");
-            const url = isLiked ? "/post/unlike" : "/post/like";
-            const type = isLiked ? "delete" : "post";
-
-            $.ajax({
-                type: type,
-                url: url,
-                data: { "postId": currentPostId },
-                success: function(response) {
-                    if (response.result === "success") {
-                        if (isLiked) {
-                            $icon
-                                .removeClass("bi-heart-fill text-danger")
-                                .addClass("bi-heart text-dark");
-                            $count.text(parseInt($count.text(), 10) - 1);
+                $.ajax({
+                    url: isLiked ? "/comment/unlike" : "/comment/like",
+                    type: isLiked ? "DELETE" : "POST",
+                    data: { commentId: commentId },
+                    success: function (response) {
+                        if (response && response.result === "success") {
+                            loadComments(currentPostId);
                         } else {
-                            $icon
-                                .removeClass("bi-heart text-dark")
-                                .addClass("bi-heart-fill text-danger");
-                            $count.text(parseInt($count.text(), 10) + 1);
+                            alert(response?.message || "처리 실패");
                         }
-                    } else {
-                        alert("처리 실패");
+                    },
+                    error: function () {
+                        alert("통신 에러");
                     }
-                },
-                error: function() {
-                    alert("통신 에러");
-                }
+                });
             });
+
+
+            $(document).on("click", "#modalLikeBtn", function () {
+                const $icon = $("#modalLikeIcon");
+                const $count = $("#modalLikeCount");
+
+                const isLiked = $icon.hasClass("bi-heart-fill");
+                const url = isLiked ? "/post/unlike" : "/post/like";
+                const method = isLiked ? "DELETE" : "POST";
+
+                if (!currentPostId) {
+                    alert("postId가 없습니다. 모달을 다시 열어주세요.");
+                    return;
+                }
+
+                $.ajax({
+                    type: method,
+                    url: url,
+                    data: { postId: currentPostId },
+                    success: function (response) {
+                        if (response && response.result === "success") {
+                            const now = parseInt($count.text(), 10) || 0;
+
+                            if (isLiked) {
+                                $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");
+                                $count.text(Math.max(0, now - 1));
+                            } else {
+                                $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");
+                                $count.text(now + 1);
+                            }
+                        } else {
+                            alert(response?.message || "처리 실패");
+                        }
+                    },
+                    error: function () {
+                        alert("통신 에러");
+                    }
+                });
+            });
+
         });
     </script>
 </th:block>

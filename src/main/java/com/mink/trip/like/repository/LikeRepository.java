@@ -7,13 +7,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LikeRepository extends JpaRepository<Like, LikeId> {
-    public int countByPostId(long postId);
-    public boolean existsByPostIdAndUserId (long postId, long userId);
-    public void deleteByPostId(long postId);
-
-    int countByCommentId(long commentId);
-    boolean existsByCommentIdAndUserId(long commentId, long userId);
-    void deleteByCommentId(long commentId);
-
+    public int countByPostIdAndCommentId(long postId, long commentId);
+    public boolean existsByPostIdAndUserIdAndCommentId (long postId, long userId, long commentId);
+    void deleteByPostId(long postId);
+    public int countByCommentIdAndPostId(long commentId, long postId);
+    public boolean existsByCommentIdAndUserIdAndPostId(long commentId, long userId, long postId);
+    public void deleteByCommentIdAndUserIdAndPostId(long commentId, long userId, long postId);
 
 }

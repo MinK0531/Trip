@@ -15,4 +15,7 @@ public class CommentDetail {
     private Long rootId;
     private int depth;
     private boolean isDeleted;
+
+    private int likeCount;
+    private boolean isLike;
 }

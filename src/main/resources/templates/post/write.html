@@ -1,11 +1,11 @@
 <th:block th:fragment="PostPopup">
-
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 bg-transparent">
             <div class="ticket-wrapper">
                 <div class="ticket-main mr-5">
-                    <div class="ticket-container" >
+                    <div class="ticket-container">
                         <div class="ticket-left-upload ml-4 mb-5">
+
                             <div class="new-post-header">
                                 <div class="ticket-plane-icon">
                                     <svg viewBox="0 0 24 24">
@@ -16,6 +16,7 @@
                             </div>
 
                             <div class="upload-main-content text-center" id="drop-zone">
+
                                 <input type="file" id="image-input" class="d-none" multiple accept="image/*">
 
                                 <div id="upload-placeholder" class="text-center">
@@ -26,16 +27,27 @@
                                     </button>
                                 </div>
 
-                                <div id="image-preview-container"></div>
-                                <div id="slider-dots" class="slider-dots"></div>
+                                <div id="swiper-wrapper-box" class="d-none">
+                                    <div class="swiper post-swiper">
+                                        <div class="swiper-wrapper" id="imagePreviewWrapper">
+                                            <!-- slides injected by JS -->
+                                        </div>
+
+                                        <div class="swiper-pagination"></div>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
+
                         <div class="ticket-center-input mr-4">
                             <div class="top-stripe-head">
                                 <img src="/img/top-stripe.png" alt="top-stripe">
                             </div>
+
                             <label class="ticket-label mt-4">내용</label>
-                            <textarea id="contents" class="ticket-input" rows="4" placeholder="여행의 기록을 남겨보세요 (0/1000)"></textarea>
+                            <textarea id="contents" class="ticket-input" rows="4"
+                                      placeholder="여행의 기록을 남겨보세요 (0/1000)"></textarea>
 
                             <label class="ticket-label">여행한 나라</label>
                             <select id="country" class="ticket-input">
@@ -47,294 +59,481 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="ticket-stub mr-3">
                     <div class="d-flex justify-content-end">
                         <button type="button" class="close-ticket" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
+
                     <p class="stub-title">추천하는 장소 (선택)</p>
+
                     <label class="ticket-label">여행한 도시</label>
                     <select id="city" class="ticket-input" disabled>
                         <option value="" disabled selected>도시명</option>
                     </select>
+
                     <label class="ticket-label">가게 이름</label>
-                    <input type="text" id="place-name"  class="ticket-input" placeholder="맛집/명소">
+                    <input type="text" id="place-name" class="ticket-input" placeholder="맛집/명소">
+
                     <label class="ticket-label">분위기</label>
                     <input type="text" id="place-mood" class="ticket-input" placeholder="평화로운, 힙한 등">
 
-                    <button class="btn-upload-blue">POST NOW</button>
+                    <button type="button" class="btn-upload-blue">POST NOW</button>
                 </div>
             </div>
         </div>
     </div>
+
     <input type="hidden" id="latitude" name="latitude" value="0.0">
     <input type="hidden" id="longitude" name="longitude" value="0.0">
-
 </th:block>
+
 <th:block th:fragment="PostPopupScript">
-    <script>
-        $(function () {
-            const $countrySelect = $("#country");
-            const $citySelect = $("#city");
-            const $latitude = $("#latitude");
-            const $longitude = $("#longitude");
+        <script>
 
-            $.ajax({
-                url: "/country/list",
-                type: "GET",
-                dataType: "json",
-                success: function (data) {
-                    $.each(data, function (_, c) {
-                        $("<option>")
-                            .val(c.countryNameEn)
-                            .text(c.countryName)
-                            .attr("data-id", c.id)
-                            .appendTo($countrySelect);
+            (function () {
+                if (window.__PostPopupScriptInitialized) return;
+                window.__PostPopupScriptInitialized = true;
+
+                window.postPopupState = window.postPopupState || { editPostId: null };
+
+                const selectedFiles = [];
+                let existingImages = [];
+                const removedImageIds = [];
+
+                const $modal = $("#postCreateModal");
+                const $fileInput = $("#image-input");
+                const $dropZone = $("#drop-zone");
+                const $placeholder = $("#upload-placeholder");
+                const $swiperBox = $("#swiper-wrapper-box");
+                const $wrapper = $("#imagePreviewWrapper");
+
+                let postSwiper = null;
+
+                function ensureSwiper() {
+                    if (postSwiper) return;
+
+                    const swiperEl = document.querySelector("#postCreateModal .post-swiper");
+                    if (!swiperEl) return;
+
+                    postSwiper = new Swiper(swiperEl, {
+                        slidesPerView: 1,
+                        spaceBetween: 0,
+                        loop: false,
+                        pagination: {
+                            el: swiperEl.querySelector(".swiper-pagination"),
+                            clickable: true
+                        },
+                        observer: true,
+                        observeParents: true
                     });
-                },
-                error: function () {
-                    console.error("나라 목록 로딩 실패");
-                }
-            });
-
-            $countrySelect.on("change", function () {
-                const countryName = $(this).val();
-
-                $citySelect.html('<option value="" disabled selected>도시명</option>')
-                    .prop("disabled", true);
-
-                $.ajax({
-                    url: "/city/list",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({ country: countryName }),
-                    success: function (res) {
-                        const cities = res.data.cities || [];
-                        cities.sort().forEach(city => {
-                            $("<option>").val(city).text(city).appendTo($citySelect);
-                        });
-                        $citySelect.prop("disabled", cities.length === 0);
-
-                        // 나라 좌표 자동 저장
-                        $latitude.val(res.data.latitude || 0.0);
-                        $longitude.val(res.data.longitude || 0.0);
-                    },
-                    error: function (err) {
-                        console.error(err);
-                    }
-                });
-            });
-
-            $citySelect.on("change", function () {
-                const countryName = $countrySelect.val();
-                const cityName = $(this).val();
-
-                if (!cityName) return;
-
-                $.ajax({
-                    url: "/city/list",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({ country: countryName, city: cityName }),
-                    success: function (res) {
-                        $latitude.val(res.data.latitude || 0.0);
-                        $longitude.val(res.data.longitude || 0.0);
-                    },
-                    error: function (err) {
-                        console.error(err);
-                    }
-                });
-            });
-        });
-
-    </script>
-
-    <script>
-        const selectedFiles = [];
-        const $fileInput = $("#image-input");
-        const $previewContainer = $("#image-preview-container");
-        const $dotsContainer = $("#slider-dots");
-        const $placeholder = $("#upload-placeholder");
-        const $dropZone = $("#drop-zone");
-
-
-        const getCurrentIndex = () => {
-            const width = $previewContainer.width();
-            return Math.round($previewContainer.scrollLeft() / width);
-        };
-
-        const scrollToIndex = (index) => {
-            const width = $previewContainer.width();
-            $previewContainer.stop().animate({
-                scrollLeft: width * index
-            }, 300);
-        };
-
-        const updateActiveDot = () => {
-            const index = getCurrentIndex();
-            $dotsContainer.find(".dot")
-                .removeClass("active")
-                .eq(index).addClass("active");
-        };
-
-        const updateUI = () => {
-            if (selectedFiles.length > 0) {
-                $placeholder.hide();
-                $previewContainer.css("display", "flex");
-                $dotsContainer.show();
-                updateActiveDot();
-            } else {
-                $placeholder.show();
-                $previewContainer.hide();
-                $dotsContainer.hide().empty();
-                $fileInput.val("");
-            }
-        };
-
-
-        function handleFiles(files) {
-            [...files].forEach(file => {
-                if (!file.type.startsWith("image/")) {
-                    alert("이미지 파일만 업로드 가능합니다.");
-                    return;
                 }
 
-                selectedFiles.push(file);
+                function destroySwiper() {
+                    if (!postSwiper) return;
+                    postSwiper.destroy(true, true);
+                    postSwiper = null;
+                }
 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    $previewContainer.append(`
-                <div class="preview-item">
-                    <img src="${e.target.result}">
-                    <button type="button" class="remove-img-btn">&times;</button>
-                </div>
-            `);
+                function swiperUpdateAfterRender() {
+                    if (!postSwiper) return;
+                    postSwiper.update();
 
-                    $dotsContainer.append(`<div class="dot"></div>`);
+                    setTimeout(() => {
+                        if (!postSwiper) return;
+                        postSwiper.update();
+                    }, 50);
+                }
 
-                    updateUI();
-                    scrollToIndex(selectedFiles.length - 1);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-
-        $(document).on("click", "#selectImgeBtn, .image-upload-icon", () => {
-            $fileInput.click();
-        });
-
-        $fileInput.on("change", e => handleFiles(e.target.files));
-
-        $(document).on("click", ".remove-img-btn", function () {
-            const $item = $(this).closest(".preview-item");
-            const index = $item.index();
-
-            selectedFiles.splice(index, 1);
-            $item.remove();
-            $dotsContainer.find(".dot").eq(index).remove();
-
-            updateUI();
-        });
-
-        $previewContainer.on("scroll", updateActiveDot);
-
-        $dotsContainer.on("click", ".dot", function () {
-            scrollToIndex($(this).index());
-        });
-
-        $(document).on("keydown", function (e) {
-            if (!$previewContainer.is(":visible")) return;
-            if (selectedFiles.length === 0) return;
-
-            const index = getCurrentIndex();
-
-            if (e.key === "ArrowLeft" && index > 0) {
-                scrollToIndex(index - 1);
-            }
-
-            if (e.key === "ArrowRight" && index < selectedFiles.length - 1) {
-                scrollToIndex(index + 1);
-            }
-        });
-
-        $dropZone.on("dragover", e => {
-            e.preventDefault();
-            $dropZone.addClass("drag-active");
-        });
-
-        $dropZone.on("dragleave", () =>
-            $dropZone.removeClass("drag-active")
-        );
-
-        $dropZone.on("drop", e => {
-            e.preventDefault();
-            $dropZone.removeClass("drag-active");
-            handleFiles(e.originalEvent.dataTransfer.files);
-        });
-    </script>
-
-
-
-
-    <script>
-        $(".btn-upload-blue").on("click", function() {
-            const contents = $("#contents").val().trim();
-            const countryNameEn = $("#country").val();
-            const countryId = $("#country option:selected").data('id');
-            const cityName = $("#city").val();
-            const placeName = $("#place-name").val().trim();
-            const musicUrl = $("#music").val().trim();
-            const atmosphere = $("#place-mood").val().trim();
-
-            if (selectedFiles.length === 0) {
-                alert("최소 한 장의 사진을 등록해주세요.");
-                return;
-            }
-            if (!contents) {
-                alert("여행 기록 내용을 입력하세요.");
-                $("#contents").focus();
-                return;
-            }
-            if (!countryNameEn) {
-                alert("나라를 선택하세요.");
-                $("#country").focus();
-                return;
-            }
-
-            const formData = new FormData();
-            selectedFiles.forEach(file => {
-                formData.append("images", file);
-            });
-            formData.append("contents", contents);
-            formData.append("countryId", countryId);
-            formData.append("countryNameEn", countryNameEn);
-            formData.append("cityName", cityName || "");
-            formData.append("musicUrl", musicUrl || "");
-            formData.append("atmosphere", atmosphere || "");
-            formData.append("placeName", placeName || "");
-            formData.append("latitude", $("#latitude").val());
-            formData.append("longitude", $("#longitude").val());
-
-            $.ajax({
-                type: "POST",
-                url: "/post/write",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    if (response.result === "success") {
-                        location.reload();
+                function showSwiperUIIfNeeded() {
+                    const total = existingImages.length + selectedFiles.length;
+                    if (total > 0) {
+                        $placeholder.hide();
+                        $swiperBox.removeClass("d-none");
+                        ensureSwiper();
                     } else {
-                        alert("작성 실패!");
+                        $swiperBox.addClass("d-none");
+                        $placeholder.show();
+                        destroySwiper();
                     }
-                },
-                error: function () {
-                    alert("작성 에러!");
                 }
-            });
-        });
 
-    </script>
+                function clearSlides() {
+                    $wrapper.empty();
+                }
+
+                function appendExistingSlide(img) {
+                    $wrapper.append(`
+          <div class="swiper-slide" data-type="existing" data-image-id="${img.id}">
+            <div class="preview-item">
+              <img src="${img.imagePath}">
+              <button type="button" class="remove-img-btn">&times;</button>
+            </div>
+          </div>
+        `);
+                }
+
+                function appendNewFileSlide(previewUrl) {
+                    $wrapper.append(`
+          <div class="swiper-slide" data-type="new">
+            <div class="preview-item">
+              <img src="${previewUrl}">
+              <button type="button" class="remove-img-btn">&times;</button>
+            </div>
+          </div>
+        `);
+                }
+
+                function renderAllSlides() {
+                    clearSlides();
+
+                    existingImages.forEach(appendExistingSlide);
+
+                    if (selectedFiles.length === 0) {
+                        showSwiperUIIfNeeded();
+                        ensureSwiper();
+                        swiperUpdateAfterRender();
+                        if (postSwiper) postSwiper.slideTo(0, 0);
+                        return;
+                    }
+
+                    let remaining = selectedFiles.length;
+
+                    selectedFiles.forEach((file) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            appendNewFileSlide(e.target.result);
+                            remaining -= 1;
+
+                            if (remaining === 0) {
+                                showSwiperUIIfNeeded();
+                                ensureSwiper();
+                                swiperUpdateAfterRender();
+                                if (postSwiper) postSwiper.slideTo(existingImages.length, 0);
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    });
+
+                    showSwiperUIIfNeeded();
+                }
+
+                function handleFiles(files) {
+                    [...files].forEach((file) => {
+                        if (!file.type.startsWith("image/")) {
+                            alert("이미지 파일만 업로드 가능");
+                            return;
+                        }
+                        selectedFiles.push(file);
+                    });
+                    renderAllSlides();
+                }
+
+                function resetPostForm() {
+                    window.postPopupState.editPostId = null;
+
+                    $("#contents, #music, #place-name, #place-mood").val("");
+                    $("#country").val("").trigger("change");
+                    $("#city").val("");
+
+                    selectedFiles.length = 0;
+                    existingImages = [];
+                    removedImageIds.length = 0;
+
+                    clearSlides();
+                    showSwiperUIIfNeeded();
+                    $(".btn-upload-blue").text("POST NOW");
+                }
+
+                function initCountryCityOnce() {
+                    const $countrySelect = $("#country");
+                    const $citySelect = $("#city");
+                    const $latitude = $("#latitude");
+                    const $longitude = $("#longitude");
+
+                    $countrySelect.off("change.postPopup");
+                    $citySelect.off("change.postPopup");
+
+                    if ($countrySelect.find("option").length <= 1) {
+                        $.ajax({
+                            url: "/country/list",
+                            type: "GET",
+                            dataType: "json",
+                            success: function (response) {
+                                $countrySelect.html('<option value="" disabled selected>나라를 선택하세요</option>');
+                                $.each(response, function (_, c) {
+                                    $("<option>")
+                                        .val(c.countryNameEn)
+                                        .text(c.countryName)
+                                        .attr("data-id", c.id)
+                                        .appendTo($countrySelect);
+                                });
+                            },
+                            error: function () { console.error("나라 목록 로딩 실패"); }
+                        });
+                    }
+
+                    $countrySelect.on("change.postPopup", function () {
+                        const countryName = $(this).val();
+                        $citySelect.html('<option value="" disabled selected>도시명</option>').prop("disabled", true);
+                        $latitude.val(0.0);
+                        $longitude.val(0.0);
+
+                        if (!countryName) return;
+
+                        $.ajax({
+                            url: "/city/list",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ country: countryName }),
+                            success: function (res) {
+                                let cities = [];
+                                let latVal = 0.0;
+                                let lngVal = 0.0;
+
+                                if (res && res.data) {
+                                    if (res.data.cities) cities = res.data.cities;
+                                    if (res.data.latitude) latVal = res.data.latitude;
+                                    if (res.data.longitude) lngVal = res.data.longitude;
+                                }
+
+                                cities.sort().forEach((city) => {
+                                    $("<option>").val(city).text(city).appendTo($citySelect);
+                                });
+
+                                $citySelect.prop("disabled", cities.length === 0);
+                                $latitude.val(latVal);
+                                $longitude.val(lngVal);
+                            },
+                            error: function (err) { console.error(err); }
+                        });
+                    });
+
+                    $citySelect.on("change.postPopup", function () {
+                        const countryName = $countrySelect.val();
+                        const cityName = $(this).val();
+                        if (!cityName) return;
+
+                        $.ajax({
+                            url: "/city/list",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ country: countryName, city: cityName }),
+                            success: function (response) {
+                                let latVal = 0.0;
+                                let lngVal = 0.0;
+
+                                if (response && response.data) {
+                                    if (response.data.latitude) latVal = response.data.latitude;
+                                    if (response.data.longitude) lngVal = response.data.longitude;
+                                }
+
+                                $latitude.val(latVal);
+                                $longitude.val(lngVal);
+                            },
+                            error: function (err) { console.error(err); }
+                        });
+                    });
+                }
+
+
+                function waitSelectCountryById(countryId, onSelected) {
+                    let retry = 40;
+
+                    const tick = () => {
+                        const $opt = $("#country option").filter(function () {
+                            return Number($(this).data("id")) === Number(countryId);
+                        });
+
+                        if ($opt.length) {
+                            $opt.prop("selected", true);
+                            $("#country").trigger("change");
+                            if (typeof onSelected === "function") onSelected();
+                            return;
+                        }
+
+                        retry -= 1;
+                        if (retry <= 0) {
+                            if (typeof onSelected === "function") onSelected();
+                            return;
+                        }
+                        setTimeout(tick, 100);
+                    };
+
+                    tick();
+                }
+
+                $modal.off("shown.bs.modal.postPopup").on("shown.bs.modal.postPopup", function () {
+                    initCountryCityOnce();
+                    ensureSwiper();
+                    swiperUpdateAfterRender();
+                });
+
+                $modal.off("hidden.bs.modal.postPopup").on("hidden.bs.modal.postPopup", function () {
+                    resetPostForm();
+                    destroySwiper();
+                });
+
+                $(document).off("click.postPopup", ".remove-img-btn").on("click.postPopup", ".remove-img-btn", function () {
+                    const $slide = $(this).closest(".swiper-slide");
+                    const type = $slide.data("type");
+
+                    if (type === "existing") {
+                        const imageId = Number($slide.data("image-id"));
+                        removedImageIds.push(imageId);
+                        existingImages = existingImages.filter(x => x.id !== imageId);
+                        renderAllSlides();
+                        return;
+                    }
+
+                    const slideIndex = $slide.index();
+                    const newIndex = slideIndex - existingImages.length;
+                    if (newIndex >= 0 && newIndex < selectedFiles.length) selectedFiles.splice(newIndex, 1);
+                    renderAllSlides();
+                });
+
+                $(document).off("click.postPopup", "#selectImgeBtn, .image-upload-icon")
+                    .on("click.postPopup", "#selectImgeBtn, .image-upload-icon", function () {
+                        $fileInput.click();
+                    });
+
+                $fileInput.off("change.postPopup").on("change.postPopup", function (e) {
+                    handleFiles(e.target.files);
+                    $fileInput.val("");
+                });
+
+                $dropZone.off("dragover.postPopup").on("dragover.postPopup", function (e) {
+                    e.preventDefault();
+                    $dropZone.addClass("drag-active");
+                });
+
+                $dropZone.off("dragleave.postPopup").on("dragleave.postPopup", function () {
+                    $dropZone.removeClass("drag-active");
+                });
+
+                $dropZone.off("drop.postPopup").on("drop.postPopup", function (e) {
+                    e.preventDefault();
+                    $dropZone.removeClass("drag-active");
+                    handleFiles(e.originalEvent.dataTransfer.files);
+                });
+
+                $modal.off("open-edit-post.postPopup").on("open-edit-post.postPopup", function (_e, d) {
+                    const data = d || {};
+                    window.postPopupState.editPostId = data.postId || null;
+
+                    $("#contents").val(data.contents || "");
+                    $("#music").val(data.musicUrl || "");
+                    $("#place-name").val(data.placeName || "");
+                    $("#place-mood").val(data.atmosphere || "");
+                    $(".btn-upload-blue").text("수정하기");
+
+                    initCountryCityOnce();
+                    waitSelectCountryById(data.countryId, function () {
+                        setTimeout(function () { $("#city").val(data.cityName || ""); }, 350);
+                    });
+
+                    selectedFiles.length = 0;
+                    existingImages = [];
+                    removedImageIds.length = 0;
+                    renderAllSlides();
+
+                    $.ajax({
+                        type: "GET",
+                        url: "/post/images",
+                        data: { postId: window.postPopupState.editPostId },
+                        success: function (response) {
+                            let list = [];
+                            if (response && response.data) list = response.data;
+
+                            existingImages = list.map(function (x) {
+                                return { id: x.id, imagePath: x.imagePath };
+                            });
+
+                            renderAllSlides();
+                            ensureSwiper();
+                            swiperUpdateAfterRender();
+                        },
+                        error: function () {
+                            existingImages = [];
+                            renderAllSlides();
+                            ensureSwiper();
+                            swiperUpdateAfterRender();
+                        }
+                    });
+                });
+
+                $(document).off("click.postPopup", ".btn-upload-blue").on("click.postPopup", ".btn-upload-blue", function () {
+                    const editPostId = window.postPopupState.editPostId;
+
+                    const contents = $("#contents").val().trim();
+                    const countryId = $("#country option:selected").data("id");
+
+                    if (!contents) { alert("내용을 입력하세요."); return; }
+                    if (!countryId) { alert("나라를 선택하세요."); return; }
+
+                    const isEdit = !!editPostId;
+                    if (!isEdit && selectedFiles.length === 0) {
+                        alert("사진을 한 장 이상 등록해야 한다");
+                        return;
+                    }
+
+                    const formData = new FormData();
+
+                    if (isEdit) {
+                        selectedFiles.forEach(function (f) { formData.append("imageFiles", f); });
+                        removedImageIds.forEach(function (id) { formData.append("removeImageIds", id); });
+                        formData.append("postId", editPostId);
+                    } else {
+                        selectedFiles.forEach(function (f) { formData.append("images", f); });
+                    }
+
+
+                    formData.append("contents", contents);
+                    formData.append("countryId", countryId);
+                    formData.append("cityName", $("#city").val() || "");
+                    formData.append("placeName", $("#place-name").val().trim() || "");
+                    formData.append("atmosphere", $("#place-mood").val().trim() || "");
+                    formData.append("musicUrl", $("#music").val().trim() || "");
+                    formData.append("latitude", $("#latitude").val() || 0.0);
+                    formData.append("longitude", $("#longitude").val() || 0.0);
+
+                    if (isEdit) {
+                        $.ajax({
+                            type: "PUT",
+                            url: "/post/update",
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function (response) {
+                                if (response.result === "success")
+                                    location.reload();
+                                else alert("수정 실패");
+                            },
+                            error: function () {
+                                alert("수정 에러");
+                            }
+                        });
+                    } else {
+                        $.ajax({
+                            type: "POST",
+                            url: "/post/write",
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function (response) {
+                                if (response.result === "success")
+                                    location.reload();
+                                else alert("작성 실패");
+                            },
+                            error: function () { alert("작성 에러"); }
+                        });
+                    }
+                });
+
+            })();
+        </script>
+
 </th:block>
+

@@ -1,0 +1,79 @@
+package com.mink.trip.wishlist;
+
+import com.mink.trip.common.dto.ApiResponse;
+import com.mink.trip.wishlist.service.WishlistService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/wishlist")
+public class WishlistRestController {
+
+    private final WishlistService wishlistService;
+
+    @PostMapping("/create")
+    public ApiResponse<Void> create(
+            @RequestParam long countryId,
+            @RequestParam(required = false) String cityName,
+            @RequestParam String period,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String memo,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            HttpSession session
+    ) {
+        if (session == null || session.getAttribute("userId") == null) {
+            return ApiResponse.fail("로그인이 필요합니다.");
+        }
+        long userId = (Long) session.getAttribute("userId");
+
+        boolean ok = wishlistService.createWishlist(
+                userId, countryId, cityName, period, startDate, endDate, memo, latitude, longitude
+        );
+
+        return ok ? ApiResponse.success("위시리스트 등록 성공") : ApiResponse.fail("위시리스트 등록 실패");
+    }
+
+    @PutMapping("/update")
+    public ApiResponse<Void> update(
+            @RequestParam long wishlistId,
+            @RequestParam long countryId,
+            @RequestParam(required = false) String cityName,
+            @RequestParam String period,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String memo,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude,
+            HttpSession session
+    ) {
+        if (session == null || session.getAttribute("userId") == null) {
+            return ApiResponse.fail("로그인이 필요합니다.");
+        }
+        long userId = (Long) session.getAttribute("userId");
+
+        boolean ok = wishlistService.updateWishlist(
+                userId, wishlistId, countryId, cityName, period, startDate, endDate, memo, latitude, longitude
+        );
+
+        return ok ? ApiResponse.success("수정 성공") : ApiResponse.fail("수정 실패");
+    }
+
+    @DeleteMapping("/remove")
+    public ApiResponse<Void> remove(
+            @RequestParam long wishlistId,
+            HttpSession session
+    ) {
+        if (session == null || session.getAttribute("userId") == null) {
+            return ApiResponse.fail("로그인이 필요합니다.");
+        }
+        long userId = (Long) session.getAttribute("userId");
+
+        boolean ok = wishlistService.deleteWishlist(userId, wishlistId);
+
+        return ok ? ApiResponse.success("삭제 성공") : ApiResponse.fail("삭제 실패");
+    }
+}

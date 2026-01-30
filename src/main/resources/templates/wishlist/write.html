@@ -1,60 +1,365 @@
 <th:block th:fragment="WishlistPopup">
-
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <h5 class="fw-bold mb-4">위시리스트 추가</h5>
-            <label class="ticket-label">여행지</label><input type="text" class="wish-input">
-            <label class="ticket-label">국가</label><input type="text" class="wish-input" placeholder="국가를 선택하세요">
-            <label class="ticket-label">희망 시기</label><input type="text" class="wish-input" placeholder="언제 가고 싶으신가요?">
+        <div class="modal-content p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h5 id="wishModalTitle" class="fw-bold mb-0">위시리스트 추가</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <input type="hidden" id="wishId">
+
+            <label class="ticket-label">나라</label>
+            <select id="wishCountryId" class="wish-input">
+                <option value="" disabled selected>나라를 선택하세요</option>
+            </select>
+
+            <label class="ticket-label">도시 (선택)</label>
+            <select id="wishCityName" class="wish-input" disabled>
+                <option value="" disabled selected>도시명</option>
+            </select>
+
+            <label class="ticket-label">희망 시기</label>
+            <input type="text" id="wishPeriod" class="wish-input" placeholder="언제 가고 싶나요?">
+
             <label class="ticket-label">희망 날짜 범위 선택 (선택)</label>
             <div class="wish-date-container">
-                <input type="date" class="wish-input">
-                <input type="date" class="wish-input">
+                <input type="date" id="wishStartDate" class="wish-input">
+                <input type="date" id="wishEndDate" class="wish-input">
             </div>
+
             <label class="ticket-label">메모 (선택)</label>
-            <textarea class="wish-input" rows="3" placeholder="이 여행에 대한 메모를 적어 주세요"></textarea>
-            <div class="wish-footer">
+            <textarea id="wishMemo" class="wish-input" rows="3"></textarea>
+
+            <input type="hidden" id="wishLatitude">
+            <input type="hidden" id="wishLongitude">
+
+            <div class="wish-footer mt-4 flex justify-end gap-2">
                 <button type="button" class="btn btn-light border" data-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-primary px-4">추가하기</button>
+                <button type="button" class="btn btn-primary px-4" id="wishSubmitBtn">저장</button>
             </div>
         </div>
     </div>
-
 </th:block>
 <th:block th:fragment="WishlistPopupScript">
-    <script>
-        $(function () {
+        <script>
+            (function () {
+                if (window.__WishlistPopupScriptInitialized) return;
+                window.__WishlistPopupScriptInitialized = true;
 
-            $('#wishSubmitBtn').on('click', function () {
+                const $modal = $("#wishCreateModal");
+                const $country = $("#wishCountryId");
+                const $city = $("#wishCityName");
+                const $lat = $("#wishLatitude");
+                const $lng = $("#wishLongitude");
+                const $start = $("#wishStartDate");
+                const $end = $("#wishEndDate");
 
-                const data = {
-                    place: $('#wishPlace').val().trim(),
-                    country: $('#wishCountry').val().trim(),
-                    period: $('#wishPeriod').val().trim(),
-                    startDate: $('#wishStartDate').val(),
-                    endDate: $('#wishEndDate').val(),
-                    memo: $('#wishMemo').val().trim()
-                };
+                function applyEndMinByStart() {
+                    const startDate = $start.val();
 
-                if (!data.place) {
-                    alert('여행지를 입력해 주세요.');
-                    $('#wishPlace').focus();
-                    return;
+                    if (!startDate) {
+                        $end.attr("min", "");
+                        return;
+                    }
+
+                    $end.attr("min", startDate);
+
+                    const endDate = $end.val();
+                    if (endDate && endDate < startDate) {
+                        $end.val("");
+                    }
+                }
+                function resetForm() {
+                    $("#wishModalTitle").text("위시리스트 추가");
+                    $("#wishId").val("");
+
+                    $country.val("");
+                    $city.html('<option value="" disabled selected>도시명</option>').prop("disabled", true);
+
+
+                    $("#wishPeriod, #wishMemo").val("");
+                    $start.val("");
+                    $end.val("");
+                    $end.attr("min", "");
+
+                    $lat.val("");
+                    $lng.val("");
+
+                    $("#wishSubmitBtn").text("저장");
                 }
 
-                if (!data.country) {
-                    alert('국가를 입력해 주세요.');
-                    $('#wishCountry').focus();
-                    return;
+                $(document)
+                    .off("change.wishPopup", "#wishStartDate")
+                    .on("change.wishPopup", "#wishStartDate", function () {
+                        applyEndMinByStart();
+                    });
+
+                function loadCountriesOnce(done) {
+                    if ($country.data("loaded")) {
+                        if (typeof done === "function") done();
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "/country/list",
+                        type: "GET",
+                        dataType: "json",
+                        success: function (data) {
+                            $country.html('<option value="" disabled selected>나라를 선택하세요</option>');
+                            data.forEach(c => {
+                                $("<option>")
+                                    .val(c.countryNameEn)
+                                    .text(c.countryName)
+                                    .attr("data-id", c.id)
+                                    .appendTo($country);
+                            });
+                            $country.data("loaded", true);
+                            if (typeof done === "function") done();
+                        },
+                        error: function () {
+                            console.error("나라 목록 로딩 실패");
+                            if (typeof done === "function") done();
+                        }
+                    });
                 }
 
-                console.log('위시리스트 데이터', data);
+
+                function waitSelectWishCountry(countryId, onSelected) {
+                    let retry = 60;
+                    const tick = () => {
+                        const $opt = $("#wishCountryId option").filter(function () {
+                            return Number($(this).data("id")) === Number(countryId);
+                        });
+
+                        if ($opt.length) {
+                            $opt.prop("selected", true);
+                            $("#wishCountryId").trigger("change");
+                            if (typeof onSelected === "function") onSelected();
+                            return;
+                        }
+
+                        retry -= 1;
+                        if (retry <= 0) {
+                            if (typeof onSelected === "function") onSelected();
+                            return;
+                        }
+                        setTimeout(tick, 80);
+                    };
+                    tick();
+                }
 
 
-                alert('위시리스트가 추가되었습니다.');
-                $('.modal').modal('hide');
-            });
+                function setCityAfterLoaded(cityName) {
+                    if (!cityName) return;
 
-        });
-    </script>
-</th:block>
+                    let retry = 60;
+                    const tick = () => {
+                        const hasOpt = $("#wishCityName option").filter(function () {
+                            return $(this).val() === cityName;
+                        }).length > 0;
+
+                        if (hasOpt) {
+                            $("#wishCityName").val(cityName).trigger("change");
+                            return;
+                        }
+
+                        retry -= 1;
+                        if (retry <= 0) return;
+                        setTimeout(tick, 80);
+                    };
+                    tick();
+                }
+
+
+                $(document)
+                    .off("change.wishPopup", "#wishCountryId")
+                    .on("change.wishPopup", "#wishCountryId", function () {
+                        const countryName = $(this).val();
+
+                        $city.html('<option value="" disabled selected>도시명</option>').prop("disabled", true);
+                        $lat.val("");
+                        $lng.val("");
+
+                        if (!countryName) return;
+
+                        $.ajax({
+                            url: "/city/list",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ country: countryName }),
+                            success: function (response) {
+                                let cities = [];
+
+                                if (response && response.data && response.data.cities) {
+                                    cities = response.data.cities;
+                                }
+
+                                cities.sort().forEach(city =>
+                                    $("<option>").val(city).text(city).appendTo($city)
+                                );
+
+                                $city.prop("disabled", cities.length === 0);
+
+                                if (response && response.data) {
+                                    $lat.val(response.data.latitude || "");
+                                    $lng.val(response.data.longitude || "");
+                                } else {
+                                    $lat.val("");
+                                    $lng.val("");
+                                }
+                            },
+                            error: function () { console.error("도시 목록 로딩 실패"); }
+                        });
+                    });
+
+                $(document)
+                    .off("change.wishPopup", "#wishCityName")
+                    .on("change.wishPopup", "#wishCityName", function () {
+                        const countryName = $country.val();
+                        const cityName = $(this).val();
+                        if (!cityName) return;
+
+                        $.ajax({
+                            url: "/city/list",
+                            type: "POST",
+                            contentType: "application/json",
+                            data: JSON.stringify({ country: countryName, city: cityName }),
+                            success: function (response) {
+                                if (response && response.data) {
+                                    $lat.val(res.data.latitude);
+                                    $lng.val(res.data.longitude);
+                                } else {
+                                    $lat.val("");
+                                    $lng.val("");
+                                }
+                            },
+                            error: function () { console.error("도시 위경도 로딩 실패"); }
+                        });
+                    });
+
+                $(document)
+                    .off("click.wishPopup", ".edit-wishlist-btn")
+                    .on("click.wishPopup", ".edit-wishlist-btn", function () {
+                        const st = window.moreModalState;
+                        if (!st || st.type !== "WISHLIST") return;
+
+                        const d = st.data || {};
+
+                        if (typeof hideBsModal === "function") hideBsModal("moreModal");
+                        else $("#moreModal").modal("hide");
+
+                        setTimeout(() => {
+                            if (typeof showBsModal === "function") showBsModal("wishCreateModal");
+                            else $("#wishCreateModal").modal("show");
+
+                            setTimeout(() => {
+                                $("#wishCreateModal").trigger("open-edit-wish", d);
+                            }, 50);
+                        }, 150);
+                    });
+
+                $modal
+                    .off("open-edit-wish.wishPopup")
+                    .on("open-edit-wish.wishPopup", function (_e, d) {
+                        const data = d || {};
+
+                        $("#wishModalTitle").text("위시리스트 수정");
+                        $("#wishSubmitBtn").text("수정");
+                        $("#wishId").val(data.wishlistId || "");
+
+                        $("#wishPeriod").val(data.period || "");
+                        $("#wishStartDate").val(data.startDate || "");
+                        $("#wishEndDate").val(data.endDate || "");
+                        $("#wishMemo").val(data.memo || "");
+                        $lat.val(data.latitude || "");
+                        $lng.val(data.longitude || "");
+
+                        applyEndMinByStart();
+
+                        loadCountriesOnce(function () {
+                            waitSelectWishCountry(data.countryId, function () {
+                                setCityAfterLoaded(data.cityName || "");
+                            });
+                        });
+                    });
+
+                $(document)
+                    .off("click.wishPopup", "#wishSubmitBtn")
+                    .on("click.wishPopup", "#wishSubmitBtn", function () {
+
+                        const wishlistId = $("#wishId").val();
+                        const countryId = $("#wishCountryId option:selected").data("id");
+                        const period = $("#wishPeriod").val().trim();
+
+                        if (!countryId) {
+                            alert("나라를 선택하세요.");
+                            return;
+                        }
+                        if (!period) {
+                            alert("희망 시기를 입력하세요.");
+                            return;
+                        }
+
+                        const payload = {
+                            countryId: countryId,
+                            cityName: $city.val(),
+                            period: period,
+                            startDate: $("#wishStartDate").val(),
+                            endDate: $("#wishEndDate").val(),
+                            memo: $("#wishMemo").val(),
+                            latitude: $lat.val() || null,
+                            longitude: $lng.val() || null
+                        };
+
+                        if (wishlistId) {
+                            payload.wishlistId = wishlistId;
+
+                            $.ajax({
+                                type: "PUT",
+                                url: "/wishlist/update",
+                                data: payload,
+                                success: function (response) {
+                                    if (response.result === "success") {
+                                        $modal.modal("hide");
+                                        location.reload();
+                                    } else {
+                                         alert("위시리스트 수정 실패");
+                                    }
+                                },
+                                error: function () { alert("위시리스트 수정 에러"); }
+                            });
+
+                            return;
+                        }
+
+                        $.ajax({
+                            type: "POST",
+                            url: "/wishlist/create",
+                            data: payload,
+                            success: function (response) {
+                                if (response.result === "success") {
+                                    $modal.modal("hide");
+                                    location.reload();
+                                } else {
+                                   alert("위시리스트 저장 실패");
+                                }
+                            },
+                            error: function () { alert("위시리스트 저장 에러"); }
+                        });
+                    });
+
+
+                $modal
+                    .off("shown.bs.modal.wishPopup")
+                    .on("shown.bs.modal.wishPopup", function () {
+                        loadCountriesOnce();
+                        if (typeof lucide !== "undefined") lucide.createIcons();
+                    });
+
+                $modal
+                    .off("hidden.bs.modal.wishPopup")
+                    .on("hidden.bs.modal.wishPopup", resetForm);
+
+            })();
+        </script>
+    </th:block>

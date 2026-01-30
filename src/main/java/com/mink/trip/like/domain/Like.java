@@ -25,7 +25,7 @@ public class Like {
     @Id
     private long userId;
     @Id
-    private Long commentId;
+    private long commentId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

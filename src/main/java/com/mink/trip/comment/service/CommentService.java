@@ -3,6 +3,7 @@ package com.mink.trip.comment.service;
 import com.mink.trip.comment.domain.Comment;
 import com.mink.trip.comment.dto.CommentDetail;
 import com.mink.trip.comment.repository.CommentRepository;
+import com.mink.trip.like.service.LikeService;
 import com.mink.trip.user.domain.User;
 import com.mink.trip.user.service.UserService;
 import jakarta.transaction.Transactional;
@@ -20,8 +21,8 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final UserService userService;
-
-    public List<CommentDetail> getCommentList(Long postId) {
+    private final LikeService likeService;
+    public List<CommentDetail> getCommentList(Long postId, Long userId) {
         List<Comment> comments =
                 commentRepository.findByPostIdAndIsDeletedFalseOrderByRootIdAscDepthAscIdAsc(postId);
 
@@ -29,6 +30,8 @@ public class CommentService {
 
         for (Comment comment : comments) {
             User user = userService.getUserById(comment.getUserId());
+            int likeCount = likeService.countLikeByComment(comment.getId());
+            boolean isLike = likeService.isLikeComment(comment.getId(), userId);
 
             result.add(CommentDetail.builder()
                     .id(comment.getId())
@@ -39,6 +42,8 @@ public class CommentService {
                     .rootId(comment.getRootId())
                     .depth(comment.getDepth())
                     .isDeleted(comment.isDeleted())
+                    .likeCount(likeCount)
+                    .isLike(isLike)
                     .build());
         }
         return result;
@@ -90,5 +95,9 @@ public class CommentService {
         } catch (Exception e) {
             return false;
         }
+    }
+    @Transactional
+    public void deleteCommentByPostId(long postId) {
+        commentRepository.deleteByPostId(postId);
     }
 }

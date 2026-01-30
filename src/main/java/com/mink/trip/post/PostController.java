@@ -1,6 +1,5 @@
 package com.mink.trip.post;
 
-import com.mink.trip.post.domain.Post;
 import com.mink.trip.post.dto.PostDetail;
 import com.mink.trip.post.service.PostService;
 import jakarta.servlet.http.HttpSession;
@@ -19,15 +18,6 @@ public class PostController {
 
     private final PostService postService;
 
-    @GetMapping("/timeline")
-    public String timeline(Model model,
-                           HttpSession session) {
-        long userId = (Long) session.getAttribute("userId");
-
-        List<PostDetail> postList = postService.getPostList(userId);
-        model.addAttribute("postList", postList);
-        return "/post/timeline";
-    }
 
     @GetMapping("/detail_popup")
     public String detail_popup(Model model

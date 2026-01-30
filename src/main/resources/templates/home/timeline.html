@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/default_head}">
+
+<body>
+<div layout:fragment="fragment">
+
+    <main class="max-w-2xl mx-auto px-4 py-20">
+        <div class="space-y-6">
+
+            <div th:if="${feedList == null or #lists.isEmpty(feedList)}"
+                 class="text-center text-gray-500">
+                <i data-lucide="camera-off" class="w-12 h-12 mx-auto mb-4"></i>
+                <p>아직 게시물이 없습니다. 첫 여행 기록을 남겨보세요!</p>
+            </div>
+
+            <div th:if="${feedList != null}" th:each="item : ${feedList}">
+                <th:block th:if="${item != null}"
+                          th:switch="${item.type != null ? item.type.name() : 'NONE'}">
+
+                    <th:block th:case="'POST'"
+                              th:replace="post/post_card :: PostCard(post=${item.post})">
+                    </th:block>
+
+                    <th:block th:case="'WISHLIST'"
+                              th:replace="wishlist/wishlist_card :: WishlistCard(wishlist=${item.wishlist})">
+                    </th:block>
+
+                </th:block>
+            </div>
+
+        </div>
+        <div class="modal fade create-choice-modal" id="moreModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <button type="button" class="btn-choice edit-post-btn d-none">게시물 수정</button>
+                        <button type="button" class="btn-choice delete-post-btn d-none">게시물 삭제</button>
+
+                        <button type="button" class="btn-choice edit-wishlist-btn d-none">위시리스트 수정</button>
+                        <button type="button" class="btn-choice delete-wishlist-btn d-none">위시리스트 삭제</button>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="post/popup_detail :: PopupDetail"></th:block>
+
+    <script>
+
+        (function () {
+            if (window.__TimelineMoreModalInitialized) return;
+            window.__TimelineMoreModalInitialized = true;
+
+            window.moreModalState = window.moreModalState || { type: null, data: {} };
+
+            function showBsModal(id) {
+                const $m = $("#" + id);
+                if (!$m.length) return;
+                $m.modal({ backdrop: "static", keyboard: false });
+                $m.modal("show");
+            }
+            function hideBsModal(id) {
+                const $m = $("#" + id);
+                if (!$m.length) return;
+                $m.modal("hide");
+            }
+
+            $(document).off("click", ".more-btn").on("click", ".more-btn", function () {
+                // moreModal 버튼 초기화
+                $(".edit-post-btn, .delete-post-btn, .edit-wishlist-btn, .delete-wishlist-btn").addClass("d-none");
+
+                const $btn = $(this);
+                const type = String($btn.data("type") || "POST").toUpperCase();
+
+                if (type === "WISHLIST") {
+                    $(".edit-wishlist-btn, .delete-wishlist-btn").removeClass("d-none");
+
+                    window.moreModalState = {
+                        type: "WISHLIST",
+                        data: {
+                            wishlistId: $btn.data("wishlist-id"),
+                            countryId: $btn.data("country-id"),
+                            cityName: $btn.data("city-name"),
+                            period: $btn.data("period"),
+                            startDate: $btn.data("start-date"),
+                            endDate: $btn.data("end-date"),
+                            memo: $btn.data("memo"),
+                            latitude: $btn.data("latitude"),
+                            longitude: $btn.data("longitude")
+                        }
+                    };
+                } else {
+                    $(".edit-post-btn, .delete-post-btn").removeClass("d-none");
+
+                    window.moreModalState = {
+                        type: "POST",
+                        data: {
+                            postId: $btn.data("post-id"),
+                            contents: $btn.data("contents"),
+                            countryId: $btn.data("country-id"),
+                            cityName: $btn.data("city-name"),
+                            placeName: $btn.data("place-name"),
+                            atmosphere: $btn.data("atmosphere"),
+                            musicUrl: $btn.data("music-url")
+                        }
+                    };
+                }
+
+                showBsModal("moreModal");
+            });
+
+            $(document).off("click", ".delete-post-btn").on("click", ".delete-post-btn", function () {
+                const postId = window.moreModalState?.data?.postId;
+                if (!postId) return;
+
+                $.ajax({
+                    type: "delete",
+                    url: "/post/remove",
+                    data: { postId },
+                    success: function (response) {
+                        if(response.result == "success") {
+                            location.reload();
+                        } else {
+                            alert("게시물 삭제 실패!");
+                        }
+                    },
+                    error: function () { alert("게시물 삭제 에러"); }
+                });
+            });
+
+            $(document).off("click", ".delete-wishlist-btn").on("click", ".delete-wishlist-btn", function () {
+                const wishlistId = window.moreModalState?.data?.wishlistId;
+                if (!wishlistId) return;
+
+                $.ajax({
+                    type: "delete",
+                    url: "/wishlist/remove",
+                    data: { wishlistId },
+                    success: function (response) {
+                        if(response.result == "success") {
+                            location.reload();
+                        } else {
+                            alert("위시리스트 삭제 실패!");
+                        }
+                    },
+                    error: function () { alert("위시리스트 삭제 에러"); }
+                });
+            });
+
+            $(document).off("click", ".edit-post-btn").on("click", ".edit-post-btn", function () {
+                const st = window.moreModalState;
+                if (!st || st.type !== "POST") return;
+
+                hideBsModal("moreModal");
+
+                setTimeout(() => {
+                    $("#postCreateModal").modal({ backdrop: "static", keyboard: false });
+                    $("#postCreateModal").trigger("open-edit-post", [st.data]);
+                }, 150);
+            });
+
+            $(document).off("click", ".edit-wishlist-btn").on("click", ".edit-wishlist-btn", function () {
+                const st = window.moreModalState;
+                if (!st || st.type !== "WISHLIST") return;
+
+                hideBsModal("moreModal");
+
+                setTimeout(() => {
+                    $("#wishCreateModal").modal({ backdrop: "static", keyboard: false });
+                    $("#wishCreateModal").trigger("open-edit-wish", [st.data]);
+                }, 150);
+            });
+            $(".like-btn").on("click", function() {
+                let postId = $(this).data("post-id");
+                $.ajax({
+                    type:"post"
+                    , url:"/post/like"
+                    , data:{"postId":postId}
+                    , success:function(response)
+                    {
+                        if(response.result == "success") {
+                            location.reload();
+                        }
+                        else { alert("좋아요 실패!");
+                        }
+                    }
+                    , error:function() {
+                        alert("좋아요 에러!");
+                    } });
+            });
+            $(".unlike-btn").on("click", function() {
+                let postId = $(this).data("post-id");
+                $.ajax({
+                    type:"delete"
+                    , url:"/post/unlike"
+                    , data:{"postId":postId}
+                    , success:function(response) {
+                        if(response.result == "success") {
+                            location.reload();
+                        } else {
+                            alert("좋아요 취소 실패!");
+                        }
+                    }
+                    , error:function() {
+                        alert("좋아요 취소 에러!");
+                    }
+                });
+            });
+
+        })();
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            document.querySelectorAll(".feed-swiper").forEach((swiperEl) => {
+
+                if (swiperEl.swiper) return;
+
+                new Swiper(swiperEl, {
+                    slidesPerView: 1,
+                    spaceBetween: 0,
+                    loop: false,
+                    pagination: {
+                        el: swiperEl.querySelector(".swiper-pagination"),
+                        clickable: true
+                    },
+                    observer: true,
+                    observeParents: true
+                });
+            });
+
+        });
+    </script>
+    <th:block th:replace="post/popup_detail :: PopupDetailScript"></th:block>
+
+</div>
+</body>
+</html>

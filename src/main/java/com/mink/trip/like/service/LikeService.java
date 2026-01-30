@@ -18,9 +18,9 @@ public class LikeService {
 
     public boolean createLikePost(long postId, long userId){
 
-        Like like = Like
-                .builder()
+        Like like = Like.builder()
                 .postId(postId)
+                .commentId(0L)
                 .userId(userId)
                 .build();
         try {
@@ -30,11 +30,11 @@ public class LikeService {
         }
         return true;
     }
-    public boolean createlikeComment(long commentId, long userId) {
-        Like like = Like
-                .builder()
-                .userId(userId)
+    public boolean createLikeComment(long commentId, long userId) {
+        Like like = Like.builder()
+                .postId(0L)
                 .commentId(commentId)
+                .userId(userId)
                 .build();
 
         try {
@@ -45,10 +45,17 @@ public class LikeService {
         }
     }
     public int countByPostId(long postId){
-        return likeRepository.countByPostId(postId);
+        return likeRepository.countByPostIdAndCommentId(postId, 0L);
     }
     public boolean isLikeByPostIdAndUserId(long postId, long userId){
-        return likeRepository.existsByPostIdAndUserId(postId,userId);
+        return likeRepository.existsByPostIdAndUserIdAndCommentId(postId, userId, 0L);
+    }
+    public int countLikeByComment(long commentId) {
+        return likeRepository.countByCommentIdAndPostId(commentId, 0L);
+    }
+
+    public boolean isLikeComment(long commentId, long userId) {
+        return likeRepository.existsByCommentIdAndUserIdAndPostId(commentId, userId, 0L);
     }
 
 
@@ -56,6 +63,7 @@ public class LikeService {
 
         LikeId likeId = LikeId.builder()
                 .postId(postId)
+                .commentId(0L)
                 .userId(userId)
                 .build();
 
@@ -76,10 +84,11 @@ public class LikeService {
 
         return true;
     }
-    public boolean deletelikeComment(long commentId, long userId) {
+    public boolean deleteLikeComment(long commentId, long userId) {
         LikeId likeId = LikeId.builder()
-                .userId(userId)
+                .postId(0L)
                 .commentId(commentId)
+                .userId(userId)
                 .build();
 
         Optional<Like> optionalLike = likeRepository.findById(likeId);
@@ -95,7 +104,7 @@ public class LikeService {
         return true;
     }
     @Transactional
-    public void deleteByPostId(long postId){
+    public void deleteLikeByPostId(long postId) {
         likeRepository.deleteByPostId(postId);
     }
 

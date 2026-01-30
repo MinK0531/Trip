@@ -17,8 +17,10 @@ public class CommentRestController {
 
     private final CommentService commentService;
     @GetMapping("/post/comment/list")
-    public List<CommentDetail> getComments(@RequestParam Long postId) {
-        return commentService.getCommentList(postId);
+    public List<CommentDetail> getComments(@RequestParam Long postId,
+                                           HttpSession session) {
+        long userId = (Long) session.getAttribute("userId");
+        return commentService.getCommentList(postId,userId);
     }
     @PostMapping("/post/comment/write")
     public ApiResponse<Void> writeComment(

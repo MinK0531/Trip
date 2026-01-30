@@ -28,6 +28,7 @@ public class PostDetail {
     private double latitude;
     private double longitude;
 
+
     private int likeCount;
     private  boolean isLike;
 

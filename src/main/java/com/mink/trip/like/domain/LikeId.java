@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,4 +15,5 @@ public class LikeId {
     private long postId;
     private long userId;
     private long commentId;
+
 }
