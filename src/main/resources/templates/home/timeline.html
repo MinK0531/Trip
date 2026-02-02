@@ -42,7 +42,6 @@
                         <button type="button" class="btn-choice edit-wishlist-btn d-none">위시리스트 수정</button>
                         <button type="button" class="btn-choice delete-wishlist-btn d-none">위시리스트 삭제</button>
 
-
                     </div>
                 </div>
             </div>
@@ -70,8 +69,6 @@
                     "data-start-date": $btn.data("start-date") || "",
                     "data-end-date": $btn.data("end-date") || "",
                     "data-memo": $btn.data("memo") || "",
-                    "data-latitude": $btn.data("latitude") || 0.0,
-                    "data-longitude": $btn.data("longitude") || 0.0
                 });
             } else {
                 $(".edit-post-btn, .delete-post-btn").removeClass("d-none");
@@ -178,16 +175,16 @@
                 }
             });
         });
-        $(document).on("click", ".edit-post-btn", function () {
-            const $m = $("#moreModal");
+        $(".edit-post-btn").on("click", function () {
+            const $p = $("#moreModal");
             const data = {
-                postId: $m.attr("data-post-id"),
-                contents: $m.attr("data-contents"),
-                countryId: $m.attr("data-country-id"),
-                cityName: $m.attr("data-city-name"),
-                placeName: $m.attr("data-place-name"),
-                atmosphere: $m.attr("data-atmosphere"),
-                musicUrl: $m.attr("data-music-url")
+                postId: $p.attr("data-post-id"),
+                contents: $p.attr("data-contents"),
+                countryId: $p.attr("data-country-id"),
+                cityName: $p.attr("data-city-name"),
+                placeName: $p.attr("data-place-name"),
+                atmosphere: $p.attr("data-atmosphere"),
+                musicUrl: $p.attr("data-music-url")
             };
 
             $("#moreModal").modal("hide");
@@ -195,6 +192,25 @@
             setTimeout(function () {
                 $("#postCreateModal").modal({ backdrop: "static", keyboard: false });
                 $("#postCreateModal").trigger("open-edit-post", [data]);
+            }, 150);
+        });
+        $(document).on("click", ".edit-wishlist-btn", function () {
+            const $w = $("#moreModal");
+            const data = {
+                wishId: $w.attr("data-wishlist-id") || "",
+                countryId: $w.attr("data-country-id") || "",
+                cityName: $w.attr("data-city-name") || "",
+                period: $w.attr("data-period") || "",
+                startDate: $w.attr("data-start-date") || "",
+                endDate: $w.attr("data-end-date") || "",
+                memo: $w.attr("data-memo") || ""
+            };
+
+            $("#moreModal").modal("hide");
+
+            setTimeout(function () {
+                $("#wishCreateModal").modal({ backdrop: "static", keyboard: false });
+                $("#wishCreateModal").trigger("open-edit-wish", [data]);
             }, 150);
         });
     </script>
