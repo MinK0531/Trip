@@ -8,14 +8,12 @@
     <main class="pt-20 pb-10 bg-gray-50">
         <div id="app" class="max-w-3xl mx-auto px-4">
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col" th:attr="data-user-id=${post.userId}">
 
-                <!-- 헤더 -->
                 <div class="p-4 border-b border-gray-200 bg-white">
                     <h2 class="text-xl font-bold">알림</h2>
                 </div>
 
-                <!-- 탭 -->
                 <div class="border-b border-gray-200 bg-white">
                     <div class="flex" id="notificationTabs">
                         <button data-tab="all"

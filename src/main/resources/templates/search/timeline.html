@@ -55,126 +55,444 @@
             </div>
         </div>
     </main>
+    <th:block th:replace="post/popup_detail :: PopupDetail"></th:block>
+    <th:block th:replace="post/popup_detail :: PopupDetailScript"></th:block>
 </div>
+
 <th:block layout:fragment="script">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // 데이터 초기화
-            const mockUsers = [
-                { id: 1, username: '여행러버', bio: '전 세계를 여행 중입니다', followers: 1234 },
-                { id: 2, username: '세계일주중', bio: '365일 여행기', followers: 892 },
-                { id: 3, username: '모험가123', bio: '모험을 사랑하는 여행자', followers: 567 },
-                { id: 4, username: 'TravelHolic', bio: '여행에 미치다', followers: 2100 }
-            ];
-            const posts = [
-                { id: 101, country: '일본', content: '도쿄 여행 중입니다! 맛있는 스시가 너무 많아요.' },
-                { id: 102, country: '프랑스', content: '파리의 아침, 에펠탑 앞에서 커피 한 잔의 여유.' },
-                { id: 103, country: '미국', content: '뉴욕 타임스퀘어의 화려한 밤거리.' }
-            ];
+        $(document).ready(function () {
 
-            let searchQuery = '';
-            let searchType = 'all';
+            let searchQuery = "";
+            let searchType = "all"; // all | users | countries
+            let timer = null;
 
-            // 렌더링 함수
-            function render() {
+            // -------------------------
+            // utils
+            // -------------------------
+            function escapeHtml(str) {
+                if (str == null) return "";
+                return String(str)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            function safeProfile(path) {
+                if (!path || String(path).trim() === "") return "/img/profile.png";
+                return String(path);
+            }
+
+            function fmtDateYYYYMMDD(v) {
+                if (!v) return "";
+                const s = String(v);
+                return s.length >= 10 ? s.slice(0, 10) : s;
+            }
+
+            // -------------------------
+            // api
+            // -------------------------
+            function apiSearch(keyword, tab) {
+                return $.ajax({
+                    url: "/search",
+                    method: "GET",
+                    data: { keyword: keyword, tab: tab },
+                    dataType: "json"
+                });
+            }
+
+            // ✅ 네가 쓰는 엔드포인트로 통일
+            function apiLike(postId) {
+                return $.ajax({
+                    url: "/post/like",
+                    method: "POST",
+                    data: { postId: postId },
+                    dataType: "json"
+                });
+            }
+
+            function apiUnlike(postId) {
+                return $.ajax({
+                    url: "/post/unlike",
+                    method: "DELETE",
+                    data: { postId: postId },
+                    dataType: "json"
+                });
+            }
+
+            // -------------------------
+            // render
+            // -------------------------
+            function renderPostCardLike(p) {
+                const profileSrc = safeProfile(p.profileImg);
+                const nick = escapeHtml(p.nickName || "User");
+                const countryName = escapeHtml(p.countryName || "");
+                const cityName = escapeHtml(p.cityName || "");
+                const placeName = escapeHtml(p.placeName || "");
+                const atmosphere = escapeHtml(p.atmosphere || "");
+                const contents = escapeHtml(p.contents || "");
+                const createdAt = p.createdAt ? escapeHtml(fmtDateYYYYMMDD(p.createdAt)) : "";
+
+                const images = (p.imageList && p.imageList.length > 0)
+                    ? p.imageList.map(img => (img && img.imagePath) ? String(img.imagePath) : null).filter(Boolean)
+                    : [];
+
+                const likeCount = (p.likeCount != null) ? p.likeCount : 0;
+                const commentCount = (p.commentCount != null) ? p.commentCount : 0;
+
+                // ✅ 서버에서 isLike가 오면 "처음부터 fill" 된다
+                const liked = !!(p.isLike ?? p.like ?? p.liked);
+
+                const swiperId = `searchFeedSwiper-${p.id}`;
+
+                return `
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+
+            <div class="border-t border-gray-300 border-b relative h-20 flex items-center px-4 overflow-hidden">
+              <div class="flex items-center gap-3 z-10">
+                <div class="w-12 h-12 rounded-full border-2 border-gray-100 overflow-hidden bg-orange-100">
+                  <img src="${profileSrc}"
+                       alt="Profile"
+                       class="w-full h-full object-cover postcard-profile-img">
+                </div>
+
+                <div>
+                  <p class="font-bold text-lg">${nick}</p>
+
+                  <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                    <span>${countryName}</span>
+                    ${createdAt ? `<span class="text-xs">${createdAt}</span>` : ``}
+                  </div>
+                </div>
+              </div>
+
+              ${(placeName || cityName || atmosphere) ? `
+                <div class="absolute right-0 top-0 h-full w-1/2 bg-blue-50 border-l border-b border-blue-200 polygon">
+                  <div class="h-full flex flex-col justify-center pl-12 pr-4">
+                    <div class="space-y-1 gap-1.5">
+                      <div class="flex gap-1.5">
+                        <i data-lucide="map-pin" class="w-5 h-5 text-blue-600"></i>
+                        ${cityName ? `<p class="font-bold text-blue-900 text-sm">${cityName}</p>` : ``}
+                      </div>
+                      ${placeName ? `<p class="ml-3 text-blue-600 text-xs">${placeName}</p>` : ``}
+                      ${atmosphere ? `<p class="ml-4 text-blue-500 text-[10px]">${atmosphere}</p>` : ``}
+                    </div>
+                  </div>
+                </div>
+              ` : ``}
+            </div>
+
+            <div class="relative bg-gray-50 aspect-square overflow-hidden">
+              ${images.length > 0 ? `
+                <div class="swiper feed-swiper w-full h-full" id="${swiperId}" data-post-id="${p.id}">
+                  <div class="swiper-wrapper w-full h-full">
+                    ${images.map(path => `
+                      <div class="swiper-slide w-full h-full">
+                        <img src="${escapeHtml(path)}" class="w-full h-full object-cover" alt="post image">
+                      </div>
+                    `).join("")}
+                  </div>
+                  ${images.length > 1 ? `<div class="swiper-pagination"></div>` : ``}
+                </div>
+              ` : `
+                <div class="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                  <i data-lucide="image-off" class="w-16 h-16 mb-2"></i>
+                  <p class="text-sm">이미지가 없습니다</p>
+                </div>
+              `}
+            </div>
+
+            <div class="border-t border-gray-300 p-3 pl-1 pr-1 space-y-3">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-1.5 transition-opacity">
+
+                  <!-- ✅ 버튼/아이콘/카운트 모두 data-post-id를 가진다 -->
+                  <button type="button" class="btn-like" data-post-id="${p.id}">
+                    ${liked ? `
+                      <i class="bi bi-heart-fill text-danger btn-like-icon unlike-btn" data-post-id="${p.id}"></i>
+                    ` : `
+                      <i class="bi bi-heart text-dark btn-like-icon icon-stroke-thick like-btn" data-post-id="${p.id}"></i>
+                    `}
+                    <span class="count-text like-count" data-post-id="${p.id}">${likeCount}</span>
+                  </button>
+
+                  <button type="button" class="open-post-detail ml-2"
+                          data-post-id="${p.id}"
+                          data-nickname="${nick}"
+                          data-location="${countryName} - ${cityName}"
+                          data-content="${contents}">
+                    <i class="bi bi-chat text-dark btn-like-icon icon-stroke-thick"></i>
+                    <span class="count-text">${commentCount}</span>
+                  </button>
+
+                  <button type="button" class="ml-3">
+                    <i class="bi bi-share text-dark btn-like-icon icon-stroke-thick"></i>
+                  </button>
+                  <button type="button" class="ml-3">
+                    <i class="bi bi-send text-dark btn-like-icon icon-stroke-thick"></i>
+                  </button>
+                </div>
+
+                <button type="button">
+                  <i class="bi bi-bookmark text-dark btn-like-icon icon-stroke-thick"></i>
+                </button>
+              </div>
+
+              <div class="flex gap-2 text-m mt-3">
+                <span class="font-bold">${nick}</span>
+                <span>${contents}</span>
+              </div>
+
+              ${p.musicUrl ? `
+                <div class="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                  <i data-lucide="music" class="w-4 h-4"></i>
+                  <span class="truncate">${escapeHtml(p.musicUrl)}</span>
+                </div>
+              ` : ``}
+            </div>
+
+          </div>
+        `;
+            }
+
+            function renderUsers(users) {
+                if (!users || users.length === 0) {
+                    $("#userSection").addClass("hidden");
+                    $("#userList").empty();
+                    return 0;
+                }
+
+                $("#userSection").removeClass("hidden");
+
+                const html = users.map(u => {
+                    const nick = escapeHtml(u.nickName || u.username || "User");
+                    const bio = escapeHtml(u.profileWord || u.bio || "");
+                    const img = safeProfile(u.profileImg);
+
+                    return `
+            <div class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-all cursor-pointer group user-row"
+                 data-user-id="${u.id || u.userId || ""}">
+              <img class="w-12 h-12 rounded-full object-cover border border-gray-100"
+                   src="${img}" alt="profile">
+              <div class="flex-1">
+                <p class="font-bold text-gray-900">${nick}</p>
+                <p class="text-xs text-gray-500 mt-0.5">${bio}</p>
+              </div>
+              <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
+            </div>
+          `;
+                }).join("");
+
+                $("#userList").html(html);
+                return users.length;
+            }
+
+            function renderCountries(countries) {
+                // (너 페이지에는 countrySection/countryList가 없어서 countries는 postSection에 같이 묶어 쓰는 형태라면 이 함수는 안 써도 된다)
+                return countries ? countries.length : 0;
+            }
+
+            function renderPosts(posts) {
+                if (!posts || posts.length === 0) {
+                    $("#postSection").addClass("hidden");
+                    $("#postList").empty();
+                    return 0;
+                }
+
+                $("#postSection").removeClass("hidden");
+
+                const html = posts.map(p => renderPostCardLike(p)).join("");
+                $("#postList").html(html);
+                return posts.length;
+            }
+
+            function initSearchSwipers() {
+                if (typeof Swiper === "undefined") return;
+
+                document.querySelectorAll(".feed-swiper").forEach(el => {
+                    if (el.swiper) return; // 중복 방지
+
+                    new Swiper(el, {
+                        loop: false,
+                        pagination: {
+                            el: el.querySelector(".swiper-pagination"),
+                            clickable: true
+                        }
+                    });
+                });
+            }
+
+            function renderAll(data) {
+                const payload = data && data.data ? data.data : null;
+
+                const users = payload && payload.users ? payload.users : [];
+                const posts = payload && payload.posts ? payload.posts : [];
+                const countries = payload && payload.countries ? payload.countries : [];
+
                 if (!searchQuery) {
-                    $('#emptyState').show();
-                    $('#searchResults').hide();
+                    $("#emptyState").show();
+                    $("#searchResults").addClass("hidden");
                     return;
                 }
 
-                $('#emptyState').hide();
-                $('#searchResults').show();
+                $("#emptyState").hide();
+                $("#searchResults").removeClass("hidden");
 
-                const q = searchQuery.toLowerCase();
+                let userCount = 0, postCount = 0, countryCount = 0;
 
-                // 1. 유저 필터링 및 렌더링
-                const filteredUsers = (searchType === 'all' || searchType === 'users')
-                    ? mockUsers.filter(u => u.username.toLowerCase().includes(q))
-                    : [];
-
-                if (filteredUsers.length > 0) {
-                    $('#userSection').show();
-                    let userHtml = '';
-                    filteredUsers.forEach(user => {
-                        userHtml += `
-                            <div class="flex items-center gap-4 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-all cursor-pointer group">
-                                <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100 group-hover:scale-110 transition-transform">
-                                    ${user.username.charAt(0)}
-                                </div>
-                                <div class="flex-1">
-                                    <p class="font-bold text-gray-900">${user.username}</p>
-                                    <p class="text-xs text-gray-500 mt-0.5">${user.bio}</p>
-                                </div>
-                                <i data-lucide="chevron-right" class="w-5 h-5 text-gray-300"></i>
-                            </div>`;
-                    });
-                    $('#userList').html(userHtml);
+                if (searchType === "all" || searchType === "users") {
+                    userCount = renderUsers(users);
                 } else {
-                    $('#userSection').hide();
+                    $("#userSection").addClass("hidden");
+                    $("#userList").empty();
                 }
 
-                const filteredPosts = (searchType === 'all' || searchType === 'countries')
-                    ? posts.filter(p => p.content.toLowerCase().includes(q) || p.country.toLowerCase().includes(q))
-                    : [];
-
-                if (filteredPosts.length > 0) {
-                    $('#postSection').show();
-                    let postHtml = '';
-                    filteredPosts.forEach(post => {
-                        postHtml += `
-                            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                                <div class="p-4 flex justify-between items-center border-b border-gray-50">
-                                    <div class="flex items-center gap-2">
-                                        <div class="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">COUNTRY</div>
-                                        <span class="font-bold text-blue-900">${post.country}</span>
-                                    </div>
-                                </div>
-                                <div class="p-5">
-                                    <p class="text-gray-800 leading-relaxed">${post.content}</p>
-                                </div>
-                            </div>`;
-                    });
-                    $('#postList').html(postHtml);
+                if (searchType === "all" || searchType === "countries") {
+                    countryCount = renderCountries(countries);
+                    postCount = renderPosts(posts);
                 } else {
-                    $('#postSection').hide();
+                    $("#postSection").addClass("hidden");
+                    $("#postList").empty();
                 }
 
-                // 3. 검색 결과 없음 표시
-                if (filteredUsers.length === 0 && filteredPosts.length === 0) {
-                    $('#noResults').show().find('p').text(`"${searchQuery}"에 대한 결과가 없습니다.`);
+                if (userCount === 0 && countryCount === 0 && postCount === 0) {
+                    $("#noResults").removeClass("hidden").find("p")
+                        .text(`"${searchQuery}"에 대한 결과가 없습니다.`);
                 } else {
-                    $('#noResults').hide();
+                    $("#noResults").addClass("hidden");
                 }
 
-                // 아이콘 재생성 (Lucide icons)
-                lucide.createIcons();
+                if (window.lucide) lucide.createIcons();
+                initSearchSwipers();
             }
 
-            // 검색 입력 이벤트
-            $('#searchInput').on('input', function() {
+            // -------------------------
+            // search events
+            // -------------------------
+            function runSearch() {
+                const q = searchQuery.trim();
+                if (!q) {
+                    $("#emptyState").show();
+                    $("#searchResults").addClass("hidden");
+                    return;
+                }
+
+                apiSearch(q, searchType)
+                    .done(function (res) {
+                        if (!res || res.result === "fail") {
+                            $("#userSection").addClass("hidden");
+                            $("#postSection").addClass("hidden");
+                            $("#noResults").removeClass("hidden").find("p")
+                                .text(`"${searchQuery}"에 대한 결과가 없습니다.`);
+                            if (window.lucide) lucide.createIcons();
+                            return;
+                        }
+                        renderAll(res);
+                    })
+                    .fail(function () {
+                        $("#noResults").removeClass("hidden").find("p").text("검색 중 오류가 발생했다");
+                    });
+            }
+
+            $("#searchInput").on("input", function () {
                 searchQuery = $(this).val();
-                render();
+                clearTimeout(timer);
+                timer = setTimeout(runSearch, 250);
             });
 
-            // 탭 클릭 이벤트
-            $('.tab-btn').on('click', function() {
-                searchType = $(this).data('tab');
+            $(".tab-btn").on("click", function () {
+                searchType = $(this).data("tab");
 
-                // 탭 스타일 변경
-                $('.tab-btn').removeClass('bg-white shadow-md text-blue-600').addClass('text-gray-500 hover:text-gray-700');
-                $('.tab-btn i').removeClass('fill-blue-600/10');
+                $(".tab-btn").removeClass("bg-white shadow-md text-blue-600")
+                    .addClass("text-gray-500 hover:text-gray-700");
+                $(".tab-btn i").removeClass("fill-blue-600/10");
 
-                $(this).addClass('bg-white shadow-md text-blue-600').removeClass('text-gray-500 hover:text-gray-700');
-                $(this).find('i').addClass('fill-blue-600/10');
+                $(this).addClass("bg-white shadow-md text-blue-600")
+                    .removeClass("text-gray-500 hover:text-gray-700");
+                $(this).find("i").addClass("fill-blue-600/10");
 
-                render();
+                runSearch();
             });
 
-            // 초기 아이콘 로드
-            lucide.createIcons();
+            // -------------------------
+            // ✅ LIKE FINAL: single handler + sync
+            // -------------------------
+            function syncCardLikeUI(postId, liked, likeCount) {
+                const $icons = $(`.btn-like-icon[data-post-id='${postId}']`);
+                $icons.each(function () {
+                    const $icon = $(this);
+                    if (liked) {
+                        $icon.removeClass("bi-heart text-dark like-btn")
+                            .addClass("bi-heart-fill text-danger unlike-btn");
+                    } else {
+                        $icon.removeClass("bi-heart-fill text-danger unlike-btn")
+                            .addClass("bi-heart text-dark like-btn icon-stroke-thick");
+                    }
+                });
+
+                if (likeCount != null) {
+                    $(`.like-count[data-post-id='${postId}']`).text(String(likeCount));
+                }
+            }
+
+            $(document).on("click", ".btn-like, .btn-like-icon", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const $t = $(this);
+                const postId = Number($t.data("post-id")) || Number($t.closest(".btn-like").data("post-id"));
+                if (!postId) return;
+
+                const $icon = $(`.btn-like-icon[data-post-id='${postId}']`).first();
+                const isLiked = $icon.hasClass("bi-heart-fill") || $icon.hasClass("unlike-btn");
+
+                const $count = $(`.like-count[data-post-id='${postId}']`).first();
+                const now = parseInt($count.text() || "0", 10) || 0;
+
+                // optimistic update
+                const nextLiked = !isLiked;
+                const nextCount = Math.max(0, now + (nextLiked ? 1 : -1));
+                syncCardLikeUI(postId, nextLiked, nextCount);
+
+                const req = nextLiked ? apiLike(postId) : apiUnlike(postId);
+                req.done(function (res) {
+                    if (!res || res.result === "fail") {
+                        // rollback
+                        syncCardLikeUI(postId, isLiked, now);
+                        return;
+                    }
+
+                    // 서버가 likeCount 내려주면 최종 동기화
+                    const serverCount =
+                        (res.data && res.data.likeCount != null) ? res.data.likeCount :
+                            (res.likeCount != null) ? res.likeCount :
+                                null;
+
+                    if (serverCount != null) {
+                        syncCardLikeUI(postId, nextLiked, serverCount);
+                    }
+                }).fail(function () {
+                    // rollback
+                    syncCardLikeUI(postId, isLiked, now);
+                });
+            });
+
+
+            $(document).on("click", ".open-post-detail", function () {
+                const postId = $(this).data("post-id");
+                if (typeof window.openPostDetailModal === "function") {
+                    window.openPostDetailModal(postId);
+                    return;
+                }
+                console.log("open detail for postId:", postId);
+            });
+
+            if (window.lucide) lucide.createIcons();
         });
     </script>
 </th:block>
+
 </html>

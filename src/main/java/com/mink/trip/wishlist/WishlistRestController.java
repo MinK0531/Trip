@@ -76,4 +76,6 @@ public class WishlistRestController {
 
         return ok ? ApiResponse.success("삭제 성공") : ApiResponse.fail("삭제 실패");
     }
+
+
 }

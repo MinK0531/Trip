@@ -30,9 +30,13 @@
 
                     <div class="relative p-3 ml-2 border-b flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10 shrink-0">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-100 to-orange-200 border border-orange-200 overflow-hidden flex items-center justify-center">
-                                <i data-lucide="user" class="w-5 h-5 text-orange-400"></i>
+                            <div class="w-9 h-9 rounded-full flex items-center justify-center text-white border-2  cursor-pointer">
+                                <img id="modalWriterProfileImg"
+                                     src="/img/profile.png"
+                                     alt="Profile"
+                                     class="profile-pic profile-sty">
                             </div>
+
                             <div>
                                 <p id="modalNickname" class="font-bold text-sm text-gray-900"></p>
                                 <p class="text-[10px] text-gray-400 flex items-center gap-1 before:content-['•'] before:mr-1">
@@ -63,6 +67,7 @@
                     </div>
 
                     <div id="modalCommentList" class="flex-1 overflow-y-auto p-3 space-y-5 custom-scroll bg-gray-50/30">
+
                     </div>
 
                     <div class="px-4 py-2 border-t bg-white flex items-center gap-2">
@@ -87,8 +92,10 @@
                     <div class="p-3 border-t bg-white shrink-0">
                         <div class="flex items-center gap-3">
                             <input type="hidden" id="modalPostId">
-                            <div class="w-9 h-9 rounded-full bg-orange-100 border border-orange-200 overflow-hidden flex items-center justify-center shrink-0">
-                                <i data-lucide="user" class="w-5 h-5 text-orange-400"></i>
+                            <div class="w-9 h-9 rounded-full  border  overflow-hidden flex items-center justify-center shrink-0">
+                                <img th:src="${session.userProfileImg != null ? session.userProfileImg : '/img/profile.png'}"
+                                     alt="Profile"
+                                     class="profile-pic profile-sty">
                             </div>
                             <div class="flex-1 flex flex-col bg-gray-50 border border-gray-100 px-4 py-2 rounded-2xl focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                                 <div id="replyIndicator" class="hidden flex justify-between items-center mb-1">
@@ -109,11 +116,17 @@
     </div>
 </th:block>
 <th:block th:fragment="PopupDetailScript">
+
     <script>
-        let currentPostId = null;
-        let selectedParentId = null;
+        window.currentPostId = window.currentPostId || null;
+        window.selectedParentId = window.selectedParentId || null;
 
         let modalSwiper = null;
+
+        function safeProfileImg(src) {
+            const s = (src || "").toString().trim();
+            return s ? s : "/img/profile.png";
+        }
 
         function ensureModalSwiper() {
             if (modalSwiper) return;
@@ -149,7 +162,7 @@
         }
 
         function cancelReplyMode() {
-            selectedParentId = null;
+            window.selectedParentId = null;
             $("#replyIndicator").addClass("hidden");
             $("#commentInput").val("").attr("placeholder", "당신의 흔적을 남겨보세요...");
         }
@@ -170,6 +183,21 @@
             return roots;
         }
 
+        function safeProfileImg(src) {
+            const s = (src || "").toString().trim();
+            return s ? s : "/img/profile.png";
+        }
+
+        function renderProfileCircle(imgSrc, sizeClass, borderClass) {
+            const src = safeProfileImg(imgSrc);
+            return `
+      <div class="${sizeClass} rounded-full ${borderClass} overflow-hidden flex-shrink-0 flex items-center justify-center bg-white">
+        <img src="${src}" alt="profile" class="w-full h-full object-cover"
+             onerror="this.src='/img/profile.png'">
+      </div>
+    `;
+        }
+
         function renderComments(comments) {
             const $list = $("#modalCommentList");
             $list.find(".comment-item-container").remove();
@@ -177,18 +205,21 @@
             const grouped = groupComments(comments);
 
             grouped.forEach(parent => {
-                const deleted = !!(parent.isDeleted || parent.deleted); // 둘 다 대응
+                const deleted = !!(parent.isDeleted || parent.deleted);
                 const likeCount = (parent.likeCount != null ? parent.likeCount : 0);
                 const isLike = !!(parent.isLike ?? parent.like ?? parent.liked);
-
                 const heartClass = isLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";
+
+                const parentProfileHtml = renderProfileCircle(
+                    parent.profileImg,
+                    "w-8 h-8",
+                    "border border-orange-200"
+                );
 
                 let parentHtml = `
       <div class="comment-item-container space-y-2" data-id="${parent.id}">
         <div class="flex gap-3">
-          <div class="w-8 h-8 rounded-full bg-orange-100 border border-orange-200 flex-shrink-0 flex items-center justify-center">
-            <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
-          </div>
+          ${parentProfileHtml}
 
           <div class="flex-1">
             <p class="text-xs">
@@ -205,7 +236,6 @@
                   답글 달기
                 </button>` : ``}
 
-              <!-- ✅ 댓글 좋아요 버튼 -->
               <button type="button"
                       class="btn-comment-like flex items-center gap-1 ml-auto"
                       data-comment-id="${parent.id}">
@@ -231,11 +261,15 @@
                     const rIsLike = !!(reply.isLike ?? reply.like ?? reply.liked);
                     const rHeartClass = rIsLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";
 
+                    const replyProfileHtml = renderProfileCircle(
+                        reply.profileImg,
+                        "w-7 h-7",
+                        "border border-gray-200"
+                    );
+
                     parentHtml += `
         <div class="reply-item hidden flex gap-3 ml-5 mt-2" data-parent="${parent.id}">
-          <div class="w-7 h-7 rounded-full bg-gray-100 border flex-shrink-0 flex items-center justify-center">
-            <i data-lucide="user" class="w-3 h-3 text-gray-400"></i>
-          </div>
+          ${replyProfileHtml}
 
           <div class="flex-1">
             <p class="text-xs">
@@ -246,7 +280,6 @@
             <div class="flex items-center gap-2 mt-1">
               <div class="text-[10px] text-gray-400">방금 전</div>
 
-              <!-- ✅ 대댓글 좋아요 버튼 -->
               <button type="button"
                       class="btn-comment-like flex items-center gap-1 ml-auto"
                       data-comment-id="${reply.id}">
@@ -265,6 +298,7 @@
 
             lucide.createIcons();
         }
+
 
         function loadComments(postId) {
             $.ajax({
@@ -349,18 +383,26 @@
                 renderModalImagesFromCard($card);
 
                 const $commentArea = $("#modalCommentList").empty();
-                $commentArea.append(`
-              <div class="flex gap-3 mb-2">
-                <div class="w-8 h-8 rounded-full bg-orange-100 flex-shrink-0 border border-orange-200 flex items-center justify-center">
-                  <i data-lucide="user" class="w-4 h-4 text-orange-400"></i>
-                </div>
-                <div class="space-y-1">
-                  <p class="text-xs"><span class="font-bold mr-2 text-sm">${nickname}</span>${postContent}</p>
-                  <p class="text-[10px] text-gray-400">방금 전</p>
-                </div>
-              </div>
-            `);
+                let postProfileImg =
+                    $card.find("img.profile-pic").first().attr("src") ||
+                    $card.find("img[alt='Profile']").first().attr("src") ||
+                    "";
 
+                const postWriterProfileHtml = renderProfileCircle(
+                    postProfileImg,
+                    "w-8 h-8",
+                    "border border-orange-200"
+                );
+                $("#postDetailModal #modalWriterProfileImg").attr("src", postProfileImg || "/img/profile.png");
+                $commentArea.append(`
+  <div class="flex gap-3 mb-2">
+    ${postWriterProfileHtml}
+    <div class="space-y-1">
+      <p class="text-xs"><span class="font-bold mr-2 text-sm">${nickname}</span>${postContent}</p>
+      <p class="text-[10px] text-gray-400">방금 전</p>
+    </div>
+  </div>
+`);
                 loadComments(currentPostId);
 
                 $("#postDetailModal").removeClass("hidden").addClass("flex");
@@ -380,7 +422,6 @@
                         $("body").css("overflow", "auto");
                         cancelReplyMode();
                         destroyModalSwiper();
-                        location.reload();
                     }, 200);
                 }
             });
@@ -393,14 +434,14 @@
                     url: "/post/comment/write",
                     type: "POST",
                     data: {
-                        postId: currentPostId,
+                        postId: window.currentPostId,
                         comments: content,
-                        parentId: selectedParentId
+                        parentId: window.selectedParentId
                     },
                     success: function(response) {
                         if (response.result === "success") {
                             cancelReplyMode();
-                            loadComments(currentPostId);
+                            loadComments(window.currentPostId);
                         } else {
                             alert("댓글 등록에 실패했습니다.");
                         }
@@ -464,7 +505,7 @@
                 const url = isLiked ? "/post/unlike" : "/post/like";
                 const method = isLiked ? "DELETE" : "POST";
 
-                if (!currentPostId) {
+                if (!window.currentPostId) {
                     alert("postId가 없습니다. 모달을 다시 열어주세요.");
                     return;
                 }
@@ -472,7 +513,7 @@
                 $.ajax({
                     type: method,
                     url: url,
-                    data: { postId: currentPostId },
+                    data: { postId: window.currentPostId },
                     success: function (response) {
                         if (response && response.result === "success") {
                             const now = parseInt($count.text(), 10) || 0;

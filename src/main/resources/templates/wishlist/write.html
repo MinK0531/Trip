@@ -226,8 +226,8 @@
                             data: JSON.stringify({ country: countryName, city: cityName }),
                             success: function (response) {
                                 if (response && response.data) {
-                                    $lat.val(res.data.latitude);
-                                    $lng.val(res.data.longitude);
+                                    $lat.val(response.data.latitude);
+                                    $lng.val(response.data.longitude);
                                 } else {
                                     $lat.val("");
                                     $lng.val("");

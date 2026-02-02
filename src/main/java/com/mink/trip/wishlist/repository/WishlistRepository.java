@@ -10,4 +10,5 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
     public List<Wishlist> findByUserIdOrderByIdDesc(long userId);
     public int countByUserId(Long userId);
 
+
 }

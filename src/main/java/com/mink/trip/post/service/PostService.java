@@ -12,6 +12,8 @@ import com.mink.trip.post.dto.PostDetail;
 import com.mink.trip.post.dto.PostImageDetail;
 import com.mink.trip.post.repository.PostRepository;
 import com.mink.trip.user.domain.User;
+import com.mink.trip.user.domain.UserProfile;
+import com.mink.trip.user.repository.UserProfileRepository;
 import com.mink.trip.user.repository.UserRepository;
 import com.mink.trip.user.service.UserService;
 import jakarta.transaction.Transactional;
@@ -33,6 +35,8 @@ public class PostService {
     private  final LikeService likeService;
     private final CountryRepository countryRepository;
     private final CommentService commentService;
+    private final UserProfileRepository userProfileRepository;
+    private final UserRepository userRepository;
 
     public boolean createPost(long userId,
                               long countryId,
@@ -193,7 +197,8 @@ public class PostService {
 
         for(Post post : postList) {
             User user = userService.getUserById(post.getUserId());
-
+            UserProfile up = userProfileRepository.findByUserId(post.getUserId());
+            String profileImg = (up != null) ? up.getProfileImg() : null;
             int likeCount = likeService.countByPostId(post.getId());
             boolean isLike = likeService.isLikeByPostIdAndUserId(post.getId(), userId);
 
@@ -222,6 +227,7 @@ public class PostService {
                     .musicUrl(post.getMusicUrl())
                     .latitude(post.getLatitude())
                     .longitude(post.getLongitude())
+                    .profileImg(profileImg)
                     .likeCount(likeCount)
                     .isLike(isLike)
                     .commentCount(commentList.size())
@@ -264,4 +270,93 @@ public class PostService {
 
         return true;
     }
+    public List<PostDetail> listByCountry(long userId,long countryId) {
+        List<Post> posts = postRepository.findByCountryIdOrderByIdDesc(countryId);
+
+        return posts.stream().map(post -> {
+            User user = userService.getUserById(post.getUserId());
+            UserProfile up = userProfileRepository.findByUserId(post.getUserId());
+            String profileImg = (up != null) ? up.getProfileImg() : null;
+            int likeCount = likeService.countByPostId(post.getId());
+            boolean isLike = false;
+
+            List<PostImageDetail> imageDetails = post.getImages().stream()
+                    .sorted((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()))
+                    .map(img -> PostImageDetail.builder()
+                            .id(img.getId())
+                            .imagePath(img.getImagePath())
+                            .sortOrder(img.getSortOrder())
+                            .build())
+                    .toList();
+
+            String countryName = countryRepository.findById(post.getCountryId())
+                    .map(Country::getCountryName)
+                    .orElse("알 수 없는 나라");
+
+            return PostDetail.builder()
+                    .id(post.getId())
+                    .userId(post.getUserId())
+                    .nickName(user.getNickName())
+                    .countryId(post.getCountryId())
+                    .countryName(countryName)
+                    .cityName(post.getCityName())
+                    .contents(post.getContents())
+                    .atmosphere(post.getAtmosphere())
+                    .placeName(post.getPlaceName())
+                    .musicUrl(post.getMusicUrl())
+                    .latitude(post.getLatitude())
+                    .longitude(post.getLongitude())
+                    .profileImg(profileImg)
+                    .likeCount(likeCount)
+                    .isLike(isLike)
+                    .createdAt(post.getCreatedAt())
+                    .imageList(imageDetails)
+                    .commentCount(0)
+                    .commentList(List.of())
+                    .build();
+        }).toList();
+    }
+    public List<PostDetail> searchPosts(long userId, String keyword) {
+        List<Post> posts = postRepository.searchByKeyword(keyword);
+
+        if (posts.isEmpty()) {
+            return List.of();
+        }
+
+        return posts.stream().map(post -> {
+            User user = userRepository.findById(post.getUserId()).orElse(null);
+            UserProfile up = userProfileRepository.findByUserId(post.getUserId());
+            String profileImg = (up != null) ? up.getProfileImg() : null;
+
+            int likeCount = likeService.countByPostId(post.getId());
+            boolean isLike = (userId != 0) && likeService.isLikeByPostIdAndUserId(post.getId(), userId);
+
+            String countryName = countryRepository.findById(post.getCountryId())
+                    .map(Country::getCountryName)
+                    .orElse("알 수 없는 나라");
+
+            List<PostImageDetail> imageDetails = post.getImages().stream()
+                    .map(img -> PostImageDetail.builder()
+                            .id(img.getId())
+                            .imagePath(img.getImagePath())
+                            .sortOrder(img.getSortOrder())
+                            .build())
+                    .toList();
+
+            return PostDetail.builder()
+                    .id(post.getId())
+                    .userId(post.getUserId())
+                    .nickName(user != null ? user.getNickName() : "Unknown")
+                    .countryName(countryName)
+                    .cityName(post.getCityName())
+                    .contents(post.getContents())
+                    .profileImg(profileImg)
+                    .likeCount(likeCount)
+                    .isLike(isLike)
+                    .createdAt(post.getCreatedAt())
+                    .imageList(imageDetails)
+                    .build();
+        }).toList();
+    }
+
 }

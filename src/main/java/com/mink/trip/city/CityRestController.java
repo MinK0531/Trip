@@ -26,7 +26,7 @@ public class CityRestController {
         String city = request.getCity();
 
         if (country == null || country.isBlank()) {
-            return ResponseEntity.ok(ApiResponse.fail("country는 필수이다"));
+            return ResponseEntity.ok(ApiResponse.fail("country는 필수"));
         }
 
         try {

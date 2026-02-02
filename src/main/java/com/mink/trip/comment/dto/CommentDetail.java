@@ -16,6 +16,8 @@ public class CommentDetail {
     private int depth;
     private boolean isDeleted;
 
+    private String profileImg;
+
     private int likeCount;
     private boolean isLike;
 }

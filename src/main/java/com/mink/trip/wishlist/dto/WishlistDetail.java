@@ -14,7 +14,7 @@ public class WishlistDetail {
     private long id;
 
     private Long userId;
-
+    private String nickName;
     private long countryId;
     private String countryName;
 

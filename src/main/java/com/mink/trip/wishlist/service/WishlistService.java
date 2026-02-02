@@ -9,6 +9,7 @@ import com.mink.trip.wishlist.dto.WishlistDetail;
 import com.mink.trip.wishlist.repository.WishlistRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -108,10 +109,14 @@ public class WishlistService {
     }
 
     public List<WishlistDetail> getWishlistList(long userId) {
-        List<Wishlist> list = wishlistRepository.findByUserIdOrderByIdDesc(userId);
+
+        List<Wishlist> list = wishlistRepository.findAll(Sort.by("id").descending());
         List<WishlistDetail> result = new ArrayList<>();
 
         for (Wishlist w : list) {
+
+            User user = userService.getUserById(w.getUserId());
+
             String countryName = countryRepository.findById(w.getCountryId())
                     .map(Country::getCountryName)
                     .orElse("알 수 없는 나라");
@@ -119,6 +124,7 @@ public class WishlistService {
             result.add(WishlistDetail.builder()
                     .id(w.getId())
                     .userId(w.getUserId())
+                    .nickName(user.getNickName())
                     .countryId(w.getCountryId())
                     .countryName(countryName)
                     .cityName(w.getCityName())
@@ -131,6 +137,36 @@ public class WishlistService {
                     .createdAt(w.getCreatedAt())
                     .build());
         }
+
         return result;
+    }
+
+
+    public List<WishlistDetail> getWishlistListByCountry(long userId, long countryId) {
+        List<Wishlist> list = wishlistRepository.findByUserIdOrderByIdDesc(userId);
+
+        return list.stream()
+                .filter(w -> w.getCountryId().equals(countryId))
+                .map(w -> {
+                    String countryName = countryRepository.findById(w.getCountryId())
+                            .map(Country::getCountryName)
+                            .orElse("알 수 없는 나라");
+
+                    return WishlistDetail.builder()
+                            .id(w.getId())
+                            .userId(w.getUserId())
+                            .countryId(w.getCountryId())
+                            .countryName(countryName)
+                            .cityName(w.getCityName())
+                            .period(w.getPeriod())
+                            .startDate(w.getStartDate())
+                            .endDate(w.getEndDate())
+                            .memo(w.getMemo())
+                            .latitude(w.getLatitude())
+                            .longitude(w.getLongitude())
+                            .createdAt(w.getCreatedAt())
+                            .build();
+                })
+                .toList();
     }
 }

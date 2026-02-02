@@ -5,6 +5,8 @@ import com.mink.trip.comment.dto.CommentDetail;
 import com.mink.trip.comment.repository.CommentRepository;
 import com.mink.trip.like.service.LikeService;
 import com.mink.trip.user.domain.User;
+import com.mink.trip.user.domain.UserProfile;
+import com.mink.trip.user.repository.UserProfileRepository;
 import com.mink.trip.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserService userService;
     private final LikeService likeService;
+    private final UserProfileRepository userProfileRepository;
     public List<CommentDetail> getCommentList(Long postId, Long userId) {
         List<Comment> comments =
                 commentRepository.findByPostIdAndIsDeletedFalseOrderByRootIdAscDepthAscIdAsc(postId);
@@ -30,6 +33,8 @@ public class CommentService {
 
         for (Comment comment : comments) {
             User user = userService.getUserById(comment.getUserId());
+            UserProfile up = userProfileRepository.findByUserId(comment.getUserId());
+            String profileImg = (up != null) ? up.getProfileImg() : null;
             int likeCount = likeService.countLikeByComment(comment.getId());
             boolean isLike = likeService.isLikeComment(comment.getId(), userId);
 
@@ -42,6 +47,7 @@ public class CommentService {
                     .rootId(comment.getRootId())
                     .depth(comment.getDepth())
                     .isDeleted(comment.isDeleted())
+                    .profileImg(profileImg)
                     .likeCount(likeCount)
                     .isLike(isLike)
                     .build());

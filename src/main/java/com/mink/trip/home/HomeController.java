@@ -23,6 +23,6 @@ public class HomeController {
         }
 
         model.addAttribute("feedList", homeService.getFeedList(userId));
-        return "home/timeline";
+        return "/home/timeline";
     }
 }

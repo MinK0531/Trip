@@ -27,7 +27,7 @@ public class PostDetail {
     private String musicUrl;
     private double latitude;
     private double longitude;
-
+    private String profileImg;
 
     private int likeCount;
     private  boolean isLike;
