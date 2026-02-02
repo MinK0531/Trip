@@ -103,7 +103,6 @@
                 });
             }
 
-            // ✅ 네가 쓰는 엔드포인트로 통일
             function apiLike(postId) {
                 return $.ajax({
                     url: "/post/like",
@@ -465,7 +464,6 @@
                         return;
                     }
 
-                    // 서버가 likeCount 내려주면 최종 동기화
                     const serverCount =
                         (res.data && res.data.likeCount != null) ? res.data.likeCount :
                             (res.likeCount != null) ? res.likeCount :

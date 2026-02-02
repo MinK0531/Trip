@@ -23,7 +23,6 @@ import java.util.*;
 public class SearchService {
 
     private final FriendService friendService;
-    private final FriendRepository friendRepository;
 
     private final UserRepository userRepository;
     private final UserProfileRepository userProfileRepository;

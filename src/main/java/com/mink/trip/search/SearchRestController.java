@@ -21,7 +21,7 @@ public class SearchRestController {
             HttpSession session
     ) {
         Long userId = getLoginUserId(session);
-        if (userId == null) return ApiResponse.fail("로그인이 필요하다");
+        if (userId == null) return ApiResponse.fail("로그인이 필요");
 
         Search data = searchService.search(userId, keyword, tab);
         return ApiResponse.success("검색 성공", data);
