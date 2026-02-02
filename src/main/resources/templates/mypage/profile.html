@@ -56,163 +56,163 @@
 
     <script>
 
-        function hasCustomProfileImg(src) {
-            if (!src || typeof src !== "string") return false;
-            return src !== DEFAULT_PROFILE_IMG;
-        }
+    <!--    function hasCustomProfileImg(src) {-->
+    <!--        if (!src || typeof src !== "string") return false;-->
+    <!--        return src !== DEFAULT_PROFILE_IMG;-->
+    <!--    }-->
 
-        function toggleDeleteProfileImgBtn(imgSrc) {
-            if (hasCustomProfileImg(imgSrc)) {
-                $("#btnDeleteProfileImg").removeClass("d-none");
-            } else {
-                $("#btnDeleteProfileImg").addClass("d-none");
-            }
-        }
+    <!--    function toggleDeleteProfileImgBtn(imgSrc) {-->
+    <!--        if (hasCustomProfileImg(imgSrc)) {-->
+    <!--            $("#btnDeleteProfileImg").removeClass("d-none");-->
+    <!--        } else {-->
+    <!--            $("#btnDeleteProfileImg").addClass("d-none");-->
+    <!--        }-->
+    <!--    }-->
 
-        function loadMyProfileForModal() {
-            $("#profileEditError").addClass("d-none").text("");
+    <!--    function loadMyProfileForModal() {-->
+    <!--        $("#profileEditError").addClass("d-none").text("");-->
 
-            $.ajax({
-                url: "/user/profile",
-                type: "GET",
-                success: function (res) {
-                    if (!res || res.result !== "success") {
-                        $("#profileEditError").removeClass("d-none").text(res?.message || "프로필 조회 실패");
-                        return;
-                    }
+    <!--        $.ajax({-->
+    <!--            url: "/user/profile",-->
+    <!--            type: "GET",-->
+    <!--            success: function (res) {-->
+    <!--                if (!res || res.result !== "success") {-->
+    <!--                    $("#profileEditError").removeClass("d-none").text(res?.message || "프로필 조회 실패");-->
+    <!--                    return;-->
+    <!--                }-->
 
-                    const p = res.data || {};
+    <!--                const p = res.data || {};-->
 
-                    $("#profileWordInput").val(p.profileWord || "");
-                    $("#profileWordCount").text((p.profileWord || "").length);
+    <!--                $("#profileWordInput").val(p.profileWord || "");-->
+    <!--                $("#profileWordCount").text((p.profileWord || "").length);-->
 
-                    $("#profileImgInput").val("");
+    <!--                $("#profileImgInput").val("");-->
 
-                    const imgSrc = p.profileImg ? p.profileImg : DEFAULT_PROFILE_IMG;
-                    $("#profileImgPreview").attr("src", imgSrc);
+    <!--                const imgSrc = p.profileImg ? p.profileImg : DEFAULT_PROFILE_IMG;-->
+    <!--                $("#profileImgPreview").attr("src", imgSrc);-->
 
-                    toggleDeleteProfileImgBtn(imgSrc);
-                },
-                error: function () {
-                    $("#profileEditError").removeClass("d-none").text("프로필 조회 중 오류");
-                }
-            });
-        }
+    <!--                toggleDeleteProfileImgBtn(imgSrc);-->
+    <!--            },-->
+    <!--            error: function () {-->
+    <!--                $("#profileEditError").removeClass("d-none").text("프로필 조회 중 오류");-->
+    <!--            }-->
+    <!--        });-->
+    <!--    }-->
 
-        function saveMyProfile() {
-            $("#profileEditError").addClass("d-none").text("");
+    <!--    function saveMyProfile() {-->
+    <!--        $("#profileEditError").addClass("d-none").text("");-->
 
-            const profileWord = ($("#profileWordInput").val() || "").trim();
-            const file = $("#profileImgInput")[0].files[0];
+    <!--        const profileWord = ($("#profileWordInput").val() || "").trim();-->
+    <!--        const file = $("#profileImgInput")[0].files[0];-->
 
-            const formData = new FormData();
-            formData.append("profileWord", profileWord);
-            if (file) formData.append("profileImg", file);
+    <!--        const formData = new FormData();-->
+    <!--        formData.append("profileWord", profileWord);-->
+    <!--        if (file) formData.append("profileImg", file);-->
 
-            $.ajax({
-                url: "/user/profile/save",
-                type: "PUT",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (res) {
-                    if (!res || res.result !== "success") {
-                        $("#profileEditError").removeClass("d-none")
-                            .text(res?.message || "프로필 저장 실패이");
-                        return;
-                    }
+    <!--        $.ajax({-->
+    <!--            url: "/user/profile/save",-->
+    <!--            type: "PUT",-->
+    <!--            data: formData,-->
+    <!--            processData: false,-->
+    <!--            contentType: false,-->
+    <!--            success: function (res) {-->
+    <!--                if (!res || res.result !== "success") {-->
+    <!--                    $("#profileEditError").removeClass("d-none")-->
+    <!--                        .text(res?.message || "프로필 저장 실패이");-->
+    <!--                    return;-->
+    <!--                }-->
 
-                    applyProfileToHeader(res.data);
-                    applyProfileToDetailUI(res.data);
+    <!--                applyProfileToHeader(res.data);-->
+    <!--                applyProfileToDetailUI(res.data);-->
 
-                    // 저장 후 모달 닫기는 기존 유지 (원하면 이것도 유지로 바꿔줄 수 있다)
-                    $("#profileEditModal").modal("hide");
-                },
-                error: function (xhr) {
-                    $("#profileEditError").removeClass("d-none")
-                        .text("프로필 저장 중 오류 (status=" + xhr.status + ")");
-                }
-            });
-        }
+    <!--                // 저장 후 모달 닫기는 기존 유지 (원하면 이것도 유지로 바꿔줄 수 있다)-->
+    <!--                $("#profileEditModal").modal("hide");-->
+    <!--            },-->
+    <!--            error: function (xhr) {-->
+    <!--                $("#profileEditError").removeClass("d-none")-->
+    <!--                    .text("프로필 저장 중 오류 (status=" + xhr.status + ")");-->
+    <!--            }-->
+    <!--        });-->
+    <!--    }-->
 
-        function hasCustomProfileImg(src) {
-            if (!src || typeof src !== "string") return false;
-            return src !== DEFAULT_PROFILE_IMG;
-        }
+    <!--    function hasCustomProfileImg(src) {-->
+    <!--        if (!src || typeof src !== "string") return false;-->
+    <!--        return src !== DEFAULT_PROFILE_IMG;-->
+    <!--    }-->
 
-        function toggleDeleteProfileImgBtn(imgSrc) {
-            if (hasCustomProfileImg(imgSrc)) {
-                $("#btnDeleteProfileImg").removeClass("d-none");
-            } else {
-                $("#btnDeleteProfileImg").addClass("d-none");
-            }
-        }
+    <!--    function toggleDeleteProfileImgBtn(imgSrc) {-->
+    <!--        if (hasCustomProfileImg(imgSrc)) {-->
+    <!--            $("#btnDeleteProfileImg").removeClass("d-none");-->
+    <!--        } else {-->
+    <!--            $("#btnDeleteProfileImg").addClass("d-none");-->
+    <!--        }-->
+    <!--    }-->
 
-        $(document).on("change", "#profileImgInput", function () {
-            const f = this.files && this.files[0];
-            if (!f) return;
+    <!--    $(document).on("change", "#profileImgInput", function () {-->
+    <!--        const f = this.files && this.files[0];-->
+    <!--        if (!f) return;-->
 
-            const url = URL.createObjectURL(f);
-            $("#profileImgPreview").attr("src", url);
+    <!--        const url = URL.createObjectURL(f);-->
+    <!--        $("#profileImgPreview").attr("src", url);-->
 
-            toggleDeleteProfileImgBtn(url);
-        });
+    <!--        toggleDeleteProfileImgBtn(url);-->
+    <!--    });-->
 
-        $(document).on("click", ".edit-btn", function () {
-            $("#profileEditModal").modal({ backdrop: "static", keyboard: false });
-            loadMyProfileForModal();
-        });
+    <!--    $(document).on("click", ".edit-btn", function () {-->
+    <!--        $("#profileEditModal").modal({ backdrop: "static", keyboard: false });-->
+    <!--        loadMyProfileForModal();-->
+    <!--    });-->
 
-        $(document).on("click", "#btnSaveProfile", function () {
-            saveMyProfile();
-        });
+    <!--    $(document).on("click", "#btnSaveProfile", function () {-->
+    <!--        saveMyProfile();-->
+    <!--    });-->
 
-        $(document).on("input", "#profileWordInput", function () {
-            $("#profileWordCount").text(($(this).val() || "").length);
-        });
-    </script>
-    <script>
+    <!--    $(document).on("input", "#profileWordInput", function () {-->
+    <!--        $("#profileWordCount").text(($(this).val() || "").length);-->
+    <!--    });-->
+    <!--</script>-->
+    <!--<script>-->
 
-        $(document).on("click", "#btnDeleteProfileImg", function (e) {
-            e.preventDefault();
+    <!--    $(document).on("click", "#btnDeleteProfileImg", function (e) {-->
+    <!--        e.preventDefault();-->
 
-            if (!confirm("프로필 사진만 삭제하시겠습니까?")) return;
+    <!--        if (!confirm("프로필 사진만 삭제하시겠습니까?")) return;-->
 
-            $.ajax({
-                url: "/user/profile/delete",
-                type: "DELETE",
-                success: function (res) {
-                    if (!res || res.result !== "success") {
-                        $("#profileEditError")
-                            .removeClass("d-none")
-                            .text(res?.message || "프로필 이미지 삭제 실패");
-                        return;
-                    }
+    <!--        $.ajax({-->
+    <!--            url: "/user/profile/delete",-->
+    <!--            type: "DELETE",-->
+    <!--            success: function (res) {-->
+    <!--                if (!res || res.result !== "success") {-->
+    <!--                    $("#profileEditError")-->
+    <!--                        .removeClass("d-none")-->
+    <!--                        .text(res?.message || "프로필 이미지 삭제 실패");-->
+    <!--                    return;-->
+    <!--                }-->
 
-                    $("#profileImgPreview").attr("src", "/img/profile.png");
-                    $("#profileImgInput").val("");
-                    $("#btnDeleteProfileImg").addClass("d-none");
+    <!--                $("#profileImgPreview").attr("src", "/img/profile.png");-->
+    <!--                $("#profileImgInput").val("");-->
+    <!--                $("#btnDeleteProfileImg").addClass("d-none");-->
 
-                    $("#headerProfileImg, .profile-pic.profile-sty, #modalProfileImg, .postcard-profile-img")
-                        .attr("src", "/img/profile.png");
+    <!--                $("#headerProfileImg, .profile-pic.profile-sty, #modalProfileImg, .postcard-profile-img")-->
+    <!--                    .attr("src", "/img/profile.png");-->
 
-                    if (res.data && typeof res.data.profileWord !== "undefined") {
-                        $("#profileWordInput").val(res.data.profileWord || "");
-                        $("#profileWordCount").text((res.data.profileWord || "").length);
-                        $(".profileWordText").text(res.data.profileWord || "-");
-                    } else {
-                        $(".profileWordText").text("-");
-                    }
+    <!--                if (res.data && typeof res.data.profileWord !== "undefined") {-->
+    <!--                    $("#profileWordInput").val(res.data.profileWord || "");-->
+    <!--                    $("#profileWordCount").text((res.data.profileWord || "").length);-->
+    <!--                    $(".profileWordText").text(res.data.profileWord || "-");-->
+    <!--                } else {-->
+    <!--                    $(".profileWordText").text("-");-->
+    <!--                }-->
 
-                    $("#profileEditError").addClass("d-none").text("");
-                },
-                error: function () {
-                    $("#profileEditError")
-                        .removeClass("d-none")
-                        .text("프로필 이미지 삭제 중 오류");
-                }
-            });
-        });
-    </script>
+    <!--                $("#profileEditError").addClass("d-none").text("");-->
+    <!--            },-->
+    <!--            error: function () {-->
+    <!--                $("#profileEditError")-->
+    <!--                    .removeClass("d-none")-->
+    <!--                    .text("프로필 이미지 삭제 중 오류");-->
+    <!--            }-->
+    <!--        });-->
+    <!--    });-->
+    <!--</script>-->
 
 </th:block>

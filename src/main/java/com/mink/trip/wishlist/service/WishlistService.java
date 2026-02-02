@@ -12,6 +12,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -41,8 +42,8 @@ public class WishlistService {
                 .countryId(countryId)
                 .cityName(cityName)
                 .period(period)
-                .startDate(startDate == null || startDate.isBlank() ? null : java.time.LocalDate.parse(startDate))
-                .endDate(endDate == null || endDate.isBlank() ? null : java.time.LocalDate.parse(endDate))
+                .startDate(startDate == null || startDate.isBlank() ? null : LocalDate.parse(startDate))
+                .endDate(endDate == null || endDate.isBlank() ? null : LocalDate.parse(endDate))
                 .memo(memo)
                 .latitude(latitude)
                 .longitude(longitude)
@@ -78,8 +79,8 @@ public class WishlistService {
                 .countryId(countryId)
                 .cityName(cityName)
                 .period(period)
-                .startDate(startDate == null || startDate.isBlank() ? null : java.time.LocalDate.parse(startDate))
-                .endDate(endDate == null || endDate.isBlank() ? null : java.time.LocalDate.parse(endDate))
+                .startDate(startDate == null || startDate.isBlank() ? null : LocalDate.parse(startDate))
+                .endDate(endDate == null || endDate.isBlank() ? null : LocalDate.parse(endDate))
                 .memo(memo)
                 .latitude(latitude)
                 .longitude(longitude)

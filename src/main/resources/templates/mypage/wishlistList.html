@@ -16,203 +16,203 @@
 </th:block>
 
 <th:block th:fragment="wishlistListScript">
-    <script>
-        let ignoreNextDocClickWishlist = false;
+<!--    <script>-->
+    <!--    let ignoreNextDocClickWishlist = false;-->
 
-        function openWishlistListPanel(meta){
-            $("#wishlistPanelName").text(meta.en || meta.name || "WISHLIST");
+    <!--    function openWishlistListPanel(meta){-->
+    <!--        $("#wishlistPanelName").text(meta.en || meta.name || "WISHLIST");-->
 
-            const $panel = $("#wishlistListPanel");
-            ignoreNextDocClickWishlist = true;
+    <!--        const $panel = $("#wishlistListPanel");-->
+    <!--        ignoreNextDocClickWishlist = true;-->
 
-            $panel.removeClass("hidden");
-            requestAnimationFrame(() => $panel.addClass("show"));
+    <!--        $panel.removeClass("hidden");-->
+    <!--        requestAnimationFrame(() => $panel.addClass("show"));-->
 
-            loadCountryWishlists(meta.id);
-        }
+    <!--        loadCountryWishlists(meta.id);-->
+    <!--    }-->
 
-        function closeWishlistListPanel(){
-            const $panel = $("#wishlistListPanel");
-            $panel.removeClass("show");
-            setTimeout(() => $panel.addClass("hidden"), 200);
-        }
+    <!--    function closeWishlistListPanel(){-->
+    <!--        const $panel = $("#wishlistListPanel");-->
+    <!--        $panel.removeClass("show");-->
+    <!--        setTimeout(() => $panel.addClass("hidden"), 200);-->
+    <!--    }-->
 
-        $(document).on("click", "#wishlistListPanel", function(e){
-            e.stopPropagation();
-        });
+    <!--    $(document).on("click", "#wishlistListPanel", function(e){-->
+    <!--        e.stopPropagation();-->
+    <!--    });-->
 
-        $(document).on("click", "#wishlistPanelClose", function(e){
-            e.stopPropagation();
-            closeWishlistListPanel();
-        });
+    <!--    $(document).on("click", "#wishlistPanelClose", function(e){-->
+    <!--        e.stopPropagation();-->
+    <!--        closeWishlistListPanel();-->
+    <!--    });-->
 
-        $(document).on("click", function(e){
-            if (ignoreNextDocClickWishlist) {
-                ignoreNextDocClickWishlist = false;
-                return;
-            }
-            const $panel = $("#wishlistListPanel");
-            if ($panel.hasClass("hidden")) return;
-            if ($(e.target).closest("#wishlistListPanel").length > 0) return;
-            closeWishlistListPanel();
-        });
-
-
-        function esc(s){
-            return (s == null ? "" : String(s))
-                .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-                .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
-                .replace(/'/g,"&#39;");
-        }
-
-        function renderWishlistCards(list) {
-            const $area = $("#wishlistCardArea").empty();
-
-            if (!list || list.length === 0) {
-                $area.append(`
-            <div style="grid-column: 1/-1; text-align:center; padding:50px; color:#999; font-weight:700;">
-                등록된 위시리스트가 없습니다.
-            </div>
-        `);
-                return;
-            }
-
-            list.forEach(w => {
-                const countryName = w.countryName || "Unknown";
-                const cityName = w.cityName || "";
-                const memo = w.memo || "계획을 입력해보세요.";
-                const startDate = w.startDate || "";
-                const endDate = w.endDate || "";
-                const period = w.period || "여행 기간";
-
-                const payload = {
-                    wishlistId: w.id,
-                    countryId: w.countryId,
-                    cityName: w.cityName || "",
-                    period: w.period || "",
-                    startDate: w.startDate || "",
-                    endDate: w.endDate || "",
-                    memo: w.memo || "",
-                    latitude: w.latitude || 0.0,
-                    longitude: w.longitude || 0.0
-                };
-
-                $area.append(`
-            <div class="wishlist-card"
-                 data-wishlist-id="${w.id}"
-                 data-edit='${esc(JSON.stringify(payload))}'>
-
-                <div class="wishlist-card-top">
-                    <div class="wishlist-loc">
-                        <i class="bi bi-geo-alt-fill"></i>
-                        <div class="wishlist-loc-text">
-                            <div class="wishlist-country">${esc(countryName)}</div>
-                            <div class="wishlist-city">${esc(cityName)}</div>
-                        </div>
-                    </div>
-
-                    <div class="wishlist-actions" style="display:flex; gap:6px; align-items:center;">
-                        <button type="button" class="btn btn-sm btn-light edit-wishlist-btn" title="수정">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger delete-wishlist-btn" title="삭제">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="wishlist-date-info">
-                    <div class="wishlist-period-main">
-                        <i class="bi bi-calendar-event"></i>
-                        <span>${esc(period)}</span>
-                    </div>
-                    <div class="wishlist-date-range">
-                        ${esc(startDate)} ${endDate ? '~ ' + esc(endDate) : ''}
-                    </div>
-                </div>
-
-                <div class="wishlist-memo-box">
-                    ${esc(memo)}
-                </div>
-
-                <div class="wishlist-interest">
-                    새로운 여행을 계획 중입니다
-                </div>
-
-                <button class="wishlist-btn">
-                    <i class="bi bi-chat-dots-fill"></i> 같이 갈래?
-                </button>
-            </div>
-        `);
-            });
-        }
+    <!--    $(document).on("click", function(e){-->
+    <!--        if (ignoreNextDocClickWishlist) {-->
+    <!--            ignoreNextDocClickWishlist = false;-->
+    <!--            return;-->
+    <!--        }-->
+    <!--        const $panel = $("#wishlistListPanel");-->
+    <!--        if ($panel.hasClass("hidden")) return;-->
+    <!--        if ($(e.target).closest("#wishlistListPanel").length > 0) return;-->
+    <!--        closeWishlistListPanel();-->
+    <!--    });-->
 
 
-        function loadCountryWishlists(countryId){
-            $.ajax({
-                url: "/mypage/api/wishlist/listByCountry",
-                type: "GET",
-                dataType: "json",
-                data: { countryId: countryId },
-                success: function(response){
-                    if (!response || response.result !== "success") {
-                        renderWishlistCards([]);
-                        return;
-                    }
-                    renderWishlistCards(response.data || []);
-                },
-                error: function(){
-                    renderWishlistCards([]);
-                }
-            });
-        }
-    </script>
-    <script>
-        $(document).off("click.wishListPanel", ".edit-wishlist-btn")
-            .on("click.wishListPanel", ".edit-wishlist-btn", function(e){
-                e.preventDefault();
-                e.stopPropagation();
+    <!--    function esc(s){-->
+    <!--        return (s == null ? "" : String(s))-->
+    <!--            .replace(/&/g,"&amp;").replace(/</g,"&lt;")-->
+    <!--            .replace(/>/g,"&gt;").replace(/"/g,"&quot;")-->
+    <!--            .replace(/'/g,"&#39;");-->
+    <!--    }-->
 
-                const $card = $(this).closest(".wishlist-card");
-                const raw = $card.attr("data-edit");
-                if (!raw) return;
+    <!--    function renderWishlistCards(list) {-->
+    <!--        const $area = $("#wishlistCardArea").empty();-->
 
-                let data = null;
-                try { data = JSON.parse(raw); } catch(_e){ data = null; }
-                if (!data || !data.wishlistId) return;
+    <!--        if (!list || list.length === 0) {-->
+    <!--            $area.append(`-->
+    <!--        <div style="grid-column: 1/-1; text-align:center; padding:50px; color:#999; font-weight:700;">-->
+    <!--            등록된 위시리스트가 없습니다.-->
+    <!--        </div>-->
+    <!--    `);-->
+    <!--            return;-->
+    <!--        }-->
 
-                $("#wishCreateModal").modal({ backdrop:"static", keyboard:false });
-                $("#wishCreateModal").trigger("open-edit-wish", [data]);
-            });
+    <!--        list.forEach(w => {-->
+    <!--            const countryName = w.countryName || "Unknown";-->
+    <!--            const cityName = w.cityName || "";-->
+    <!--            const memo = w.memo || "계획을 입력해보세요.";-->
+    <!--            const startDate = w.startDate || "";-->
+    <!--            const endDate = w.endDate || "";-->
+    <!--            const period = w.period || "여행 기간";-->
 
-        $(document).off("click.wishListPanel", ".delete-wishlist-btn")
-            .on("click.wishListPanel", ".delete-wishlist-btn", function(e){
-                e.preventDefault();
-                e.stopPropagation();
+    <!--            const payload = {-->
+    <!--                wishlistId: w.id,-->
+    <!--                countryId: w.countryId,-->
+    <!--                cityName: w.cityName || "",-->
+    <!--                period: w.period || "",-->
+    <!--                startDate: w.startDate || "",-->
+    <!--                endDate: w.endDate || "",-->
+    <!--                memo: w.memo || "",-->
+    <!--                latitude: w.latitude || 0.0,-->
+    <!--                longitude: w.longitude || 0.0-->
+    <!--            };-->
 
-                const wishlistId = $(this).closest(".wishlist-card").data("wishlist-id");
-                if (!wishlistId) return;
+    <!--            $area.append(`-->
+    <!--        <div class="wishlist-card"-->
+    <!--             data-wishlist-id="${w.id}"-->
+    <!--             data-edit='${esc(JSON.stringify(payload))}'>-->
 
-                const ok = confirm("이 위시리스트를 삭제하시겠습니까?");
-                if (!ok) return;
+    <!--            <div class="wishlist-card-top">-->
+    <!--                <div class="wishlist-loc">-->
+    <!--                    <i class="bi bi-geo-alt-fill"></i>-->
+    <!--                    <div class="wishlist-loc-text">-->
+    <!--                        <div class="wishlist-country">${esc(countryName)}</div>-->
+    <!--                        <div class="wishlist-city">${esc(cityName)}</div>-->
+    <!--                    </div>-->
+    <!--                </div>-->
 
-                $.ajax({
-                    type: "DELETE",
-                    url: "/wishlist/remove",
-                    data: { wishlistId: wishlistId },
-                    success: function(response){
-                        if (response && response.result === "success") {
-                            location.reload();
-                        } else {
-                            alert(response?.message || "삭제 실패");
-                        }
-                    },
-                    error: function(){
-                        alert("삭제 에러");
-                    }
-                });
-            });
-    </script>
+    <!--                <div class="wishlist-actions" style="display:flex; gap:6px; align-items:center;">-->
+    <!--                    <button type="button" class="btn btn-sm btn-light edit-wishlist-btn" title="수정">-->
+    <!--                        <i class="bi bi-pencil"></i>-->
+    <!--                    </button>-->
+    <!--                    <button type="button" class="btn btn-sm btn-danger delete-wishlist-btn" title="삭제">-->
+    <!--                        <i class="bi bi-trash"></i>-->
+    <!--                    </button>-->
+    <!--                </div>-->
+    <!--            </div>-->
+
+    <!--            <div class="wishlist-date-info">-->
+    <!--                <div class="wishlist-period-main">-->
+    <!--                    <i class="bi bi-calendar-event"></i>-->
+    <!--                    <span>${esc(period)}</span>-->
+    <!--                </div>-->
+    <!--                <div class="wishlist-date-range">-->
+    <!--                    ${esc(startDate)} ${endDate ? '~ ' + esc(endDate) : ''}-->
+    <!--                </div>-->
+    <!--            </div>-->
+
+    <!--            <div class="wishlist-memo-box">-->
+    <!--                ${esc(memo)}-->
+    <!--            </div>-->
+
+    <!--            <div class="wishlist-interest">-->
+    <!--                새로운 여행을 계획 중입니다-->
+    <!--            </div>-->
+
+    <!--            <button class="wishlist-btn">-->
+    <!--                <i class="bi bi-chat-dots-fill"></i> 같이 갈래?-->
+    <!--            </button>-->
+    <!--        </div>-->
+    <!--    `);-->
+    <!--        });-->
+    <!--    }-->
+
+
+    <!--    function loadCountryWishlists(countryId){-->
+    <!--        $.ajax({-->
+    <!--            url: "/mypage/api/wishlist/listByCountry",-->
+    <!--            type: "GET",-->
+    <!--            dataType: "json",-->
+    <!--            data: { countryId: countryId },-->
+    <!--            success: function(response){-->
+    <!--                if (!response || response.result !== "success") {-->
+    <!--                    renderWishlistCards([]);-->
+    <!--                    return;-->
+    <!--                }-->
+    <!--                renderWishlistCards(response.data || []);-->
+    <!--            },-->
+    <!--            error: function(){-->
+    <!--                renderWishlistCards([]);-->
+    <!--            }-->
+    <!--        });-->
+    <!--    }-->
+    <!--</script>-->
+    <!--<script>-->
+    <!--    $(document).off("click.wishListPanel", ".edit-wishlist-btn")-->
+    <!--        .on("click.wishListPanel", ".edit-wishlist-btn", function(e){-->
+    <!--            e.preventDefault();-->
+    <!--            e.stopPropagation();-->
+
+    <!--            const $card = $(this).closest(".wishlist-card");-->
+    <!--            const raw = $card.attr("data-edit");-->
+    <!--            if (!raw) return;-->
+
+    <!--            let data = null;-->
+    <!--            try { data = JSON.parse(raw); } catch(_e){ data = null; }-->
+    <!--            if (!data || !data.wishlistId) return;-->
+
+    <!--            $("#wishCreateModal").modal({ backdrop:"static", keyboard:false });-->
+    <!--            $("#wishCreateModal").trigger("open-edit-wish", [data]);-->
+    <!--        });-->
+
+    <!--    $(document).off("click.wishListPanel", ".delete-wishlist-btn")-->
+    <!--        .on("click.wishListPanel", ".delete-wishlist-btn", function(e){-->
+    <!--            e.preventDefault();-->
+    <!--            e.stopPropagation();-->
+
+    <!--            const wishlistId = $(this).closest(".wishlist-card").data("wishlist-id");-->
+    <!--            if (!wishlistId) return;-->
+
+    <!--            const ok = confirm("이 위시리스트를 삭제하시겠습니까?");-->
+    <!--            if (!ok) return;-->
+
+    <!--            $.ajax({-->
+    <!--                type: "DELETE",-->
+    <!--                url: "/wishlist/remove",-->
+    <!--                data: { wishlistId: wishlistId },-->
+    <!--                success: function(response){-->
+    <!--                    if (response && response.result === "success") {-->
+    <!--                        location.reload();-->
+    <!--                    } else {-->
+    <!--                        alert(response?.message || "삭제 실패");-->
+    <!--                    }-->
+    <!--                },-->
+    <!--                error: function(){-->
+    <!--                    alert("삭제 에러");-->
+    <!--                }-->
+    <!--            });-->
+    <!--        });-->
+    <!--</script>-->
 
 
 </th:block>

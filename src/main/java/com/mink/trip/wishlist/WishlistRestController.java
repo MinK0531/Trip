@@ -30,11 +30,21 @@ public class WishlistRestController {
         }
         long userId = (Long) session.getAttribute("userId");
 
-        boolean ok = wishlistService.createWishlist(
-                userId, countryId, cityName, period, startDate, endDate, memo, latitude, longitude
-        );
+        if(wishlistService.createWishlist(
+                userId,
+                countryId,
+                cityName,
+                period,
+                startDate,
+                endDate,
+                memo,
+                latitude,
+                longitude)){
+            return ApiResponse.success("위시리스트 등록 성공");
+        } else {
+            return ApiResponse.fail("위시리스트 등록 실패");
 
-        return ok ? ApiResponse.success("위시리스트 등록 성공") : ApiResponse.fail("위시리스트 등록 실패");
+        }
     }
 
     @PutMapping("/update")
@@ -55,11 +65,24 @@ public class WishlistRestController {
         }
         long userId = (Long) session.getAttribute("userId");
 
-        boolean ok = wishlistService.updateWishlist(
-                userId, wishlistId, countryId, cityName, period, startDate, endDate, memo, latitude, longitude
-        );
 
-        return ok ? ApiResponse.success("수정 성공") : ApiResponse.fail("수정 실패");
+        if(wishlistService.updateWishlist(
+                userId,
+                wishlistId,
+                countryId,
+                cityName,
+                period,
+                startDate,
+                endDate,
+                memo,
+                latitude,
+                longitude
+        )){
+            return ApiResponse.success("수정 성공");
+        } else {
+            return ApiResponse.fail("수정 실패");
+
+        }
     }
 
     @DeleteMapping("/remove")
@@ -72,9 +95,14 @@ public class WishlistRestController {
         }
         long userId = (Long) session.getAttribute("userId");
 
-        boolean ok = wishlistService.deleteWishlist(userId, wishlistId);
+        if(wishlistService.deleteWishlist(
+                userId,
+                wishlistId)){
+            return ApiResponse.success("삭제 성공");
+        } else {
+            return ApiResponse.fail("삭제 실패");
 
-        return ok ? ApiResponse.success("삭제 성공") : ApiResponse.fail("삭제 실패");
+        }
     }
 
 

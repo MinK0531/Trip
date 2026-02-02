@@ -117,424 +117,424 @@
 </th:block>
 <th:block th:fragment="PopupDetailScript">
 
-    <script>
-        window.currentPostId = window.currentPostId || null;
-        window.selectedParentId = window.selectedParentId || null;
-
-        let modalSwiper = null;
-
-        function safeProfileImg(src) {
-            const s = (src || "").toString().trim();
-            return s ? s : "/img/profile.png";
-        }
-
-        function ensureModalSwiper() {
-            if (modalSwiper) return;
-            modalSwiper = new Swiper(".modal-swiper", {
-                slidesPerView: 1,
-                spaceBetween: 0,
-                pagination: {
-                    el: ".modal-swiper .swiper-pagination",
-                    clickable: true
-                },
-                keyboard: { enabled: true }
-            });
-        }
-
-        function destroyModalSwiper() {
-            if (!modalSwiper) return;
-            modalSwiper.destroy(true, true);
-            modalSwiper = null;
-        }
-
-        function adjustVerticalFont() {
-            const el = document.getElementById("modalLocationSidebar");
-            if (!el) return;
-            const textLength = el.innerText.trim().length;
-            let fontSize = 1.1;
-            if (textLength > 10) fontSize = 1.0;
-            if (textLength > 13) fontSize = 0.9;
-            if (textLength > 16) fontSize = 0.7;
-            if (textLength > 20) fontSize = 0.6;
-            if (textLength > 25) fontSize = 0.5;
-            if (textLength > 30) fontSize = 0.4;
-            el.style.fontSize = fontSize + "rem";
-        }
-
-        function cancelReplyMode() {
-            window.selectedParentId = null;
-            $("#replyIndicator").addClass("hidden");
-            $("#commentInput").val("").attr("placeholder", "당신의 흔적을 남겨보세요...");
-        }
-
-        function groupComments(comments) {
-            const map = {};
-            const roots = [];
-
-            comments.forEach(c => {
-                map[c.id] = { ...c, replies: [] };
-                if (!c.parentId) roots.push(map[c.id]);
-            });
-
-            comments.forEach(c => {
-                if (c.parentId && map[c.parentId]) map[c.parentId].replies.push(map[c.id]);
-            });
-
-            return roots;
-        }
-
-        function safeProfileImg(src) {
-            const s = (src || "").toString().trim();
-            return s ? s : "/img/profile.png";
-        }
-
-        function renderProfileCircle(imgSrc, sizeClass, borderClass) {
-            const src = safeProfileImg(imgSrc);
-            return `
-      <div class="${sizeClass} rounded-full ${borderClass} overflow-hidden flex-shrink-0 flex items-center justify-center bg-white">
-        <img src="${src}" alt="profile" class="w-full h-full object-cover"
-             onerror="this.src='/img/profile.png'">
-      </div>
-    `;
-        }
-
-        function renderComments(comments) {
-            const $list = $("#modalCommentList");
-            $list.find(".comment-item-container").remove();
-
-            const grouped = groupComments(comments);
-
-            grouped.forEach(parent => {
-                const deleted = !!(parent.isDeleted || parent.deleted);
-                const likeCount = (parent.likeCount != null ? parent.likeCount : 0);
-                const isLike = !!(parent.isLike ?? parent.like ?? parent.liked);
-                const heartClass = isLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";
-
-                const parentProfileHtml = renderProfileCircle(
-                    parent.profileImg,
-                    "w-8 h-8",
-                    "border border-orange-200"
-                );
-
-                let parentHtml = `
-      <div class="comment-item-container space-y-2" data-id="${parent.id}">
-        <div class="flex gap-3">
-          ${parentProfileHtml}
-
-          <div class="flex-1">
-            <p class="text-xs">
-              <span class="font-bold mr-2 text-sm">${parent.nickName}</span>
-              ${deleted ? '<span class="italic text-gray-400">삭제된 댓글입니다.</span>' : parent.comments}
-            </p>
-
-            <div class="flex gap-4 mt-1 items-center">
-              <span class="text-[10px] text-gray-400">방금 전</span>
-
-              ${!deleted ? `
-                <button class="btn-reply text-[10px] font-bold text-gray-500 hover:text-blue-500"
-                        data-id="${parent.id}" data-nick="${parent.nickName}">
-                  답글 달기
-                </button>` : ``}
-
-              <button type="button"
-                      class="btn-comment-like flex items-center gap-1 ml-auto"
-                      data-comment-id="${parent.id}">
-                <i class="bi ${heartClass} text-lg transition-transform active:scale-125"></i>
-                <span class="comment-like-count text-xs font-bold text-gray-600">${likeCount}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-    `;
-
-                if (parent.replies.length > 0) {
-                    parentHtml += `
-        <button class="btn-toggle-replies ml-5 text-[10px] text-gray-500 font-bold flex items-center gap-1"
-                data-id="${parent.id}">
-          ── 답글 ${parent.replies.length}개 보기
-        </button>`;
-                }
-
-                parent.replies.forEach(reply => {
-                    const rDeleted = !!(reply.isDeleted || reply.deleted);
-                    const rLikeCount = (reply.likeCount != null ? reply.likeCount : 0);
-                    const rIsLike = !!(reply.isLike ?? reply.like ?? reply.liked);
-                    const rHeartClass = rIsLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";
-
-                    const replyProfileHtml = renderProfileCircle(
-                        reply.profileImg,
-                        "w-7 h-7",
-                        "border border-gray-200"
-                    );
-
-                    parentHtml += `
-        <div class="reply-item hidden flex gap-3 ml-5 mt-2" data-parent="${parent.id}">
-          ${replyProfileHtml}
-
-          <div class="flex-1">
-            <p class="text-xs">
-              <span class="font-bold mr-2">${reply.nickName}</span>
-              ${rDeleted ? '<span class="italic text-gray-400">삭제된 댓글입니다.</span>' : reply.comments}
-            </p>
-
-            <div class="flex items-center gap-2 mt-1">
-              <div class="text-[10px] text-gray-400">방금 전</div>
-
-              <button type="button"
-                      class="btn-comment-like flex items-center gap-1 ml-auto"
-                      data-comment-id="${reply.id}">
-                <i class="bi ${rHeartClass} text-lg transition-transform active:scale-125"></i>
-                <span class="comment-like-count text-xs font-bold text-gray-600">${rLikeCount}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-                });
-
-                parentHtml += `</div>`;
-                $list.append(parentHtml);
-            });
-
-            lucide.createIcons();
-        }
-
-
-        function loadComments(postId) {
-            $.ajax({
-                url: "/post/comment/list",
-                type: "GET",
-                data: { postId: postId },
-                success: function(response) { renderComments(response); },
-                error: function() { console.error("댓글 로드 실패"); }
-            });
-        }
-
-        function renderModalImagesFromCard($card) {
-            const $wrapper = $("#modalImageWrapper").empty();
-
-            let $images = $card.find(".feed-swiper img");
-            if ($images.length === 0) $images = $card.find(".image-slider img");
-
-            $images.each(function() {
-                const src = $(this).attr("src");
-                $wrapper.append(`
-              <div class="swiper-slide">
-                <img src="${src}" class="w-[450px] h-full object-cover flex-shrink-0">
-              </div>
-            `);
-            });
-
-            ensureModalSwiper();
-            modalSwiper.update();
-            modalSwiper.slideTo(0, 0);
-        }
-
-        $(function() {
-
-            $(document).on("click", ".open-post-detail, .bi-chat", function() {
-                const $card = $(this).closest(".bg-white.rounded-xl");
-
-                const $openBtn = $(this).closest(".open-post-detail").length
-                    ? $(this).closest(".open-post-detail")
-                    : $card.find(".open-post-detail").first();
-
-                currentPostId = $openBtn.data("post-id") || $card.find("[data-post-id]").first().data("post-id");
-
-                const nickname = $openBtn.data("nickname") || $card.find("p.font-bold").first().text();
-                let locationText = ($openBtn.data("location") || "").toString();
-                locationText = locationText.replace(/null/gi, "").replace(/\s+-\s+$/, "").trim();
-
-                const postContent = $openBtn.data("content") || $card.find(".flex.gap-2.text-m span:last-child").text();
-
-                const likeCount = $card.find(".count-text").first().text();
-                const isLike = $card.find(".btn-like-icon").hasClass("unlike-btn");
-
-                $("#modalLikeCount").text(likeCount);
-
-                const $icon = $("#modalLikeIcon");
-                if (isLike) {
-                    $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");
-                } else {
-                    $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");
-                }
-
-                $("#modalNickname").text(nickname);
-                $("#modalLocationSidebar").text(locationText);
-                adjustVerticalFont();
-
-                const music = $card.find(".music-info-text").text() || "";
-                $("#modalMusic").text(music);
-
-                const $more = $card.find(".more-btn").first();
-                const cityName = ($more.data("city-name") || "").toString().trim();
-                const placeName = ($more.data("place-name") || "").toString().trim();
-                const atmosphere = ($more.data("atmosphere") || "").toString().trim();
-
-                if (cityName || placeName || atmosphere) {
-                    $("#modalCityName").text(cityName).toggle(!!cityName);
-                    $("#modalPlaceName").text(placeName).toggle(!!placeName);
-                    $("#modalAtmosphere").text(atmosphere).toggle(!!atmosphere);
-                    $("#modalPlaceInfo").removeClass("hidden");
-                } else {
-                    $("#modalPlaceInfo").addClass("hidden");
-                }
-
-                renderModalImagesFromCard($card);
-
-                const $commentArea = $("#modalCommentList").empty();
-                let postProfileImg =
-                    $card.find("img.profile-pic").first().attr("src") ||
-                    $card.find("img[alt='Profile']").first().attr("src") ||
-                    "";
-
-                const postWriterProfileHtml = renderProfileCircle(
-                    postProfileImg,
-                    "w-8 h-8",
-                    "border border-orange-200"
-                );
-                $("#postDetailModal #modalWriterProfileImg").attr("src", postProfileImg || "/img/profile.png");
-                $commentArea.append(`
-  <div class="flex gap-3 mb-2">
-    ${postWriterProfileHtml}
-    <div class="space-y-1">
-      <p class="text-xs"><span class="font-bold mr-2 text-sm">${nickname}</span>${postContent}</p>
-      <p class="text-[10px] text-gray-400">방금 전</p>
-    </div>
-  </div>
-`);
-                loadComments(currentPostId);
-
-                $("#postDetailModal").removeClass("hidden").addClass("flex");
-                setTimeout(() => {
-                    $("#postDetailModal > div").removeClass("scale-95").addClass("scale-100");
-                }, 10);
-
-                $("body").css("overflow", "hidden");
-                lucide.createIcons();
-            });
-
-            $("#closeModal, #postDetailModal").on("click", function(e) {
-                if (e.target === this || $(e.target).closest("#closeModal").length) {
-                    $("#postDetailModal > div").addClass("scale-95").removeClass("scale-100");
-                    setTimeout(() => {
-                        $("#postDetailModal").addClass("hidden").removeClass("flex");
-                        $("body").css("overflow", "auto");
-                        cancelReplyMode();
-                        destroyModalSwiper();
-                    }, 200);
-                }
-            });
-
-            $("#btnCommentSubmit").on("click", function() {
-                const content = $("#commentInput").val().trim();
-                if (!content) { alert("내용을 입력해주세요."); return; }
-
-                $.ajax({
-                    url: "/post/comment/write",
-                    type: "POST",
-                    data: {
-                        postId: window.currentPostId,
-                        comments: content,
-                        parentId: window.selectedParentId
-                    },
-                    success: function(response) {
-                        if (response.result === "success") {
-                            cancelReplyMode();
-                            loadComments(window.currentPostId);
-                        } else {
-                            alert("댓글 등록에 실패했습니다.");
-                        }
-                    }
-                });
-            });
-
-            $(document).on("click", ".btn-reply", function() {
-                selectedParentId = $(this).data("id");
-                const nick = $(this).data("nick");
-                $("#replyTargetName").text(`@${nick}님에게 답글 남기는 중`);
-                $("#replyIndicator").removeClass("hidden");
-                $("#commentInput").focus();
-            });
-
-            $(document).on("click", ".btn-toggle-replies", function () {
-                const parentId = $(this).data("id");
-                const $replies = $(".reply-item[data-parent='" + parentId + "']");
-                const isHidden = $replies.first().hasClass("hidden");
-
-                $replies.toggleClass("hidden");
-
-                if (isHidden) {
-                    $(this).text("── 답글 접기");
-                } else {
-                    $(this).text("── 답글 " + $replies.length + "개 보기");
-                }
-            });
-            $(document).on("click", ".btn-comment-like", function () {
-                const $btn = $(this);
-                const commentId = Number($btn.data("comment-id"));
-                if (!commentId) return;
-
-                const $icon = $btn.find("i.bi");
-
-                const isLiked = $icon.hasClass("bi-heart-fill");
-
-                $.ajax({
-                    url: isLiked ? "/comment/unlike" : "/comment/like",
-                    type: isLiked ? "DELETE" : "POST",
-                    data: { commentId: commentId },
-                    success: function (response) {
-                        if (response && response.result === "success") {
-                            loadComments(currentPostId);
-                        } else {
-                            alert(response?.message || "처리 실패");
-                        }
-                    },
-                    error: function () {
-                        alert("통신 에러");
-                    }
-                });
-            });
-
-
-            $(document).on("click", "#modalLikeBtn", function () {
-                const $icon = $("#modalLikeIcon");
-                const $count = $("#modalLikeCount");
-
-                const isLiked = $icon.hasClass("bi-heart-fill");
-                const url = isLiked ? "/post/unlike" : "/post/like";
-                const method = isLiked ? "DELETE" : "POST";
-
-                if (!window.currentPostId) {
-                    alert("postId가 없습니다. 모달을 다시 열어주세요.");
-                    return;
-                }
-
-                $.ajax({
-                    type: method,
-                    url: url,
-                    data: { postId: window.currentPostId },
-                    success: function (response) {
-                        if (response && response.result === "success") {
-                            const now = parseInt($count.text(), 10) || 0;
-
-                            if (isLiked) {
-                                $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");
-                                $count.text(Math.max(0, now - 1));
-                            } else {
-                                $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");
-                                $count.text(now + 1);
-                            }
-                        } else {
-                            alert(response?.message || "처리 실패");
-                        }
-                    },
-                    error: function () {
-                        alert("통신 에러");
-                    }
-                });
-            });
-
-        });
-    </script>
+<!--    <script>-->
+<!--        window.currentPostId = window.currentPostId || null;-->
+<!--        window.selectedParentId = window.selectedParentId || null;-->
+
+<!--        let modalSwiper = null;-->
+
+<!--        function safeProfileImg(src) {-->
+<!--            const s = (src || "").toString().trim();-->
+<!--            return s ? s : "/img/profile.png";-->
+<!--        }-->
+
+<!--        function ensureModalSwiper() {-->
+<!--            if (modalSwiper) return;-->
+<!--            modalSwiper = new Swiper(".modal-swiper", {-->
+<!--                slidesPerView: 1,-->
+<!--                spaceBetween: 0,-->
+<!--                pagination: {-->
+<!--                    el: ".modal-swiper .swiper-pagination",-->
+<!--                    clickable: true-->
+<!--                },-->
+<!--                keyboard: { enabled: true }-->
+<!--            });-->
+<!--        }-->
+
+<!--        function destroyModalSwiper() {-->
+<!--            if (!modalSwiper) return;-->
+<!--            modalSwiper.destroy(true, true);-->
+<!--            modalSwiper = null;-->
+<!--        }-->
+
+<!--        function adjustVerticalFont() {-->
+<!--            const el = document.getElementById("modalLocationSidebar");-->
+<!--            if (!el) return;-->
+<!--            const textLength = el.innerText.trim().length;-->
+<!--            let fontSize = 1.1;-->
+<!--            if (textLength > 10) fontSize = 1.0;-->
+<!--            if (textLength > 13) fontSize = 0.9;-->
+<!--            if (textLength > 16) fontSize = 0.7;-->
+<!--            if (textLength > 20) fontSize = 0.6;-->
+<!--            if (textLength > 25) fontSize = 0.5;-->
+<!--            if (textLength > 30) fontSize = 0.4;-->
+<!--            el.style.fontSize = fontSize + "rem";-->
+<!--        }-->
+
+<!--        function cancelReplyMode() {-->
+<!--            window.selectedParentId = null;-->
+<!--            $("#replyIndicator").addClass("hidden");-->
+<!--            $("#commentInput").val("").attr("placeholder", "당신의 흔적을 남겨보세요...");-->
+<!--        }-->
+
+<!--        function groupComments(comments) {-->
+<!--            const map = {};-->
+<!--            const roots = [];-->
+
+<!--            comments.forEach(c => {-->
+<!--                map[c.id] = { ...c, replies: [] };-->
+<!--                if (!c.parentId) roots.push(map[c.id]);-->
+<!--            });-->
+
+<!--            comments.forEach(c => {-->
+<!--                if (c.parentId && map[c.parentId]) map[c.parentId].replies.push(map[c.id]);-->
+<!--            });-->
+
+<!--            return roots;-->
+<!--        }-->
+
+<!--        function safeProfileImg(src) {-->
+<!--            const s = (src || "").toString().trim();-->
+<!--            return s ? s : "/img/profile.png";-->
+<!--        }-->
+
+<!--        function renderProfileCircle(imgSrc, sizeClass, borderClass) {-->
+<!--            const src = safeProfileImg(imgSrc);-->
+<!--            return `-->
+<!--      <div class="${sizeClass} rounded-full ${borderClass} overflow-hidden flex-shrink-0 flex items-center justify-center bg-white">-->
+<!--        <img src="${src}" alt="profile" class="w-full h-full object-cover"-->
+<!--             onerror="this.src='/img/profile.png'">-->
+<!--      </div>-->
+<!--    `;-->
+<!--        }-->
+
+<!--        function renderComments(comments) {-->
+<!--            const $list = $("#modalCommentList");-->
+<!--            $list.find(".comment-item-container").remove();-->
+
+<!--            const grouped = groupComments(comments);-->
+
+<!--            grouped.forEach(parent => {-->
+<!--                const deleted = !!(parent.isDeleted || parent.deleted);-->
+<!--                const likeCount = (parent.likeCount != null ? parent.likeCount : 0);-->
+<!--                const isLike = !!(parent.isLike ?? parent.like ?? parent.liked);-->
+<!--                const heartClass = isLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";-->
+
+<!--                const parentProfileHtml = renderProfileCircle(-->
+<!--                    parent.profileImg,-->
+<!--                    "w-8 h-8",-->
+<!--                    "border border-orange-200"-->
+<!--                );-->
+
+<!--                let parentHtml = `-->
+<!--      <div class="comment-item-container space-y-2" data-id="${parent.id}">-->
+<!--        <div class="flex gap-3">-->
+<!--          ${parentProfileHtml}-->
+
+<!--          <div class="flex-1">-->
+<!--            <p class="text-xs">-->
+<!--              <span class="font-bold mr-2 text-sm">${parent.nickName}</span>-->
+<!--              ${deleted ? '<span class="italic text-gray-400">삭제된 댓글입니다.</span>' : parent.comments}-->
+<!--            </p>-->
+
+<!--            <div class="flex gap-4 mt-1 items-center">-->
+<!--              <span class="text-[10px] text-gray-400">방금 전</span>-->
+
+<!--              ${!deleted ? `-->
+<!--                <button class="btn-reply text-[10px] font-bold text-gray-500 hover:text-blue-500"-->
+<!--                        data-id="${parent.id}" data-nick="${parent.nickName}">-->
+<!--                  답글 달기-->
+<!--                </button>` : ``}-->
+
+<!--              <button type="button"-->
+<!--                      class="btn-comment-like flex items-center gap-1 ml-auto"-->
+<!--                      data-comment-id="${parent.id}">-->
+<!--                <i class="bi ${heartClass} text-lg transition-transform active:scale-125"></i>-->
+<!--                <span class="comment-like-count text-xs font-bold text-gray-600">${likeCount}</span>-->
+<!--              </button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--    `;-->
+
+<!--                if (parent.replies.length > 0) {-->
+<!--                    parentHtml += `-->
+<!--        <button class="btn-toggle-replies ml-5 text-[10px] text-gray-500 font-bold flex items-center gap-1"-->
+<!--                data-id="${parent.id}">-->
+<!--          ── 답글 ${parent.replies.length}개 보기-->
+<!--        </button>`;-->
+<!--                }-->
+
+<!--                parent.replies.forEach(reply => {-->
+<!--                    const rDeleted = !!(reply.isDeleted || reply.deleted);-->
+<!--                    const rLikeCount = (reply.likeCount != null ? reply.likeCount : 0);-->
+<!--                    const rIsLike = !!(reply.isLike ?? reply.like ?? reply.liked);-->
+<!--                    const rHeartClass = rIsLike ? "bi-heart-fill text-danger" : "bi-heart text-dark";-->
+
+<!--                    const replyProfileHtml = renderProfileCircle(-->
+<!--                        reply.profileImg,-->
+<!--                        "w-7 h-7",-->
+<!--                        "border border-gray-200"-->
+<!--                    );-->
+
+<!--                    parentHtml += `-->
+<!--        <div class="reply-item hidden flex gap-3 ml-5 mt-2" data-parent="${parent.id}">-->
+<!--          ${replyProfileHtml}-->
+
+<!--          <div class="flex-1">-->
+<!--            <p class="text-xs">-->
+<!--              <span class="font-bold mr-2">${reply.nickName}</span>-->
+<!--              ${rDeleted ? '<span class="italic text-gray-400">삭제된 댓글입니다.</span>' : reply.comments}-->
+<!--            </p>-->
+
+<!--            <div class="flex items-center gap-2 mt-1">-->
+<!--              <div class="text-[10px] text-gray-400">방금 전</div>-->
+
+<!--              <button type="button"-->
+<!--                      class="btn-comment-like flex items-center gap-1 ml-auto"-->
+<!--                      data-comment-id="${reply.id}">-->
+<!--                <i class="bi ${rHeartClass} text-lg transition-transform active:scale-125"></i>-->
+<!--                <span class="comment-like-count text-xs font-bold text-gray-600">${rLikeCount}</span>-->
+<!--              </button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      `;-->
+<!--                });-->
+
+<!--                parentHtml += `</div>`;-->
+<!--                $list.append(parentHtml);-->
+<!--            });-->
+
+<!--            lucide.createIcons();-->
+<!--        }-->
+
+
+<!--        function loadComments(postId) {-->
+<!--            $.ajax({-->
+<!--                url: "/post/comment/list",-->
+<!--                type: "GET",-->
+<!--                data: { postId: postId },-->
+<!--                success: function(response) { renderComments(response); },-->
+<!--                error: function() { console.error("댓글 로드 실패"); }-->
+<!--            });-->
+<!--        }-->
+
+<!--        function renderModalImagesFromCard($card) {-->
+<!--            const $wrapper = $("#modalImageWrapper").empty();-->
+
+<!--            let $images = $card.find(".feed-swiper img");-->
+<!--            if ($images.length === 0) $images = $card.find(".image-slider img");-->
+
+<!--            $images.each(function() {-->
+<!--                const src = $(this).attr("src");-->
+<!--                $wrapper.append(`-->
+<!--              <div class="swiper-slide">-->
+<!--                <img src="${src}" class="w-[450px] h-full object-cover flex-shrink-0">-->
+<!--              </div>-->
+<!--            `);-->
+<!--            });-->
+
+<!--            ensureModalSwiper();-->
+<!--            modalSwiper.update();-->
+<!--            modalSwiper.slideTo(0, 0);-->
+<!--        }-->
+
+<!--        $(function() {-->
+
+<!--            $(document).on("click", ".open-post-detail, .bi-chat", function() {-->
+<!--                const $card = $(this).closest(".bg-white.rounded-xl");-->
+
+<!--                const $openBtn = $(this).closest(".open-post-detail").length-->
+<!--                    ? $(this).closest(".open-post-detail")-->
+<!--                    : $card.find(".open-post-detail").first();-->
+
+<!--                currentPostId = $openBtn.data("post-id") || $card.find("[data-post-id]").first().data("post-id");-->
+
+<!--                const nickname = $openBtn.data("nickname") || $card.find("p.font-bold").first().text();-->
+<!--                let locationText = ($openBtn.data("location") || "").toString();-->
+<!--                locationText = locationText.replace(/null/gi, "").replace(/\s+-\s+$/, "").trim();-->
+
+<!--                const postContent = $openBtn.data("content") || $card.find(".flex.gap-2.text-m span:last-child").text();-->
+
+<!--                const likeCount = $card.find(".count-text").first().text();-->
+<!--                const isLike = $card.find(".btn-like-icon").hasClass("unlike-btn");-->
+
+<!--                $("#modalLikeCount").text(likeCount);-->
+
+<!--                const $icon = $("#modalLikeIcon");-->
+<!--                if (isLike) {-->
+<!--                    $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");-->
+<!--                } else {-->
+<!--                    $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");-->
+<!--                }-->
+
+<!--                $("#modalNickname").text(nickname);-->
+<!--                $("#modalLocationSidebar").text(locationText);-->
+<!--                adjustVerticalFont();-->
+
+<!--                const music = $card.find(".music-info-text").text() || "";-->
+<!--                $("#modalMusic").text(music);-->
+
+<!--                const $more = $card.find(".more-btn").first();-->
+<!--                const cityName = ($more.data("city-name") || "").toString().trim();-->
+<!--                const placeName = ($more.data("place-name") || "").toString().trim();-->
+<!--                const atmosphere = ($more.data("atmosphere") || "").toString().trim();-->
+
+<!--                if (cityName || placeName || atmosphere) {-->
+<!--                    $("#modalCityName").text(cityName).toggle(!!cityName);-->
+<!--                    $("#modalPlaceName").text(placeName).toggle(!!placeName);-->
+<!--                    $("#modalAtmosphere").text(atmosphere).toggle(!!atmosphere);-->
+<!--                    $("#modalPlaceInfo").removeClass("hidden");-->
+<!--                } else {-->
+<!--                    $("#modalPlaceInfo").addClass("hidden");-->
+<!--                }-->
+
+<!--                renderModalImagesFromCard($card);-->
+
+<!--                const $commentArea = $("#modalCommentList").empty();-->
+<!--                let postProfileImg =-->
+<!--                    $card.find("img.profile-pic").first().attr("src") ||-->
+<!--                    $card.find("img[alt='Profile']").first().attr("src") ||-->
+<!--                    "";-->
+
+<!--                const postWriterProfileHtml = renderProfileCircle(-->
+<!--                    postProfileImg,-->
+<!--                    "w-8 h-8",-->
+<!--                    "border border-orange-200"-->
+<!--                );-->
+<!--                $("#postDetailModal #modalWriterProfileImg").attr("src", postProfileImg || "/img/profile.png");-->
+<!--                $commentArea.append(`-->
+<!--  <div class="flex gap-3 mb-2">-->
+<!--    ${postWriterProfileHtml}-->
+<!--    <div class="space-y-1">-->
+<!--      <p class="text-xs"><span class="font-bold mr-2 text-sm">${nickname}</span>${postContent}</p>-->
+<!--      <p class="text-[10px] text-gray-400">방금 전</p>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--`);-->
+<!--                loadComments(currentPostId);-->
+
+<!--                $("#postDetailModal").removeClass("hidden").addClass("flex");-->
+<!--                setTimeout(() => {-->
+<!--                    $("#postDetailModal > div").removeClass("scale-95").addClass("scale-100");-->
+<!--                }, 10);-->
+
+<!--                $("body").css("overflow", "hidden");-->
+<!--                lucide.createIcons();-->
+<!--            });-->
+
+<!--            $("#closeModal, #postDetailModal").on("click", function(e) {-->
+<!--                if (e.target === this || $(e.target).closest("#closeModal").length) {-->
+<!--                    $("#postDetailModal > div").addClass("scale-95").removeClass("scale-100");-->
+<!--                    setTimeout(() => {-->
+<!--                        $("#postDetailModal").addClass("hidden").removeClass("flex");-->
+<!--                        $("body").css("overflow", "auto");-->
+<!--                        cancelReplyMode();-->
+<!--                        destroyModalSwiper();-->
+<!--                    }, 200);-->
+<!--                }-->
+<!--            });-->
+
+<!--            $("#btnCommentSubmit").on("click", function() {-->
+<!--                const content = $("#commentInput").val().trim();-->
+<!--                if (!content) { alert("내용을 입력해주세요."); return; }-->
+
+<!--                $.ajax({-->
+<!--                    url: "/post/comment/write",-->
+<!--                    type: "POST",-->
+<!--                    data: {-->
+<!--                        postId: window.currentPostId,-->
+<!--                        comments: content,-->
+<!--                        parentId: window.selectedParentId-->
+<!--                    },-->
+<!--                    success: function(response) {-->
+<!--                        if (response.result === "success") {-->
+<!--                            cancelReplyMode();-->
+<!--                            loadComments(window.currentPostId);-->
+<!--                        } else {-->
+<!--                            alert("댓글 등록에 실패했습니다.");-->
+<!--                        }-->
+<!--                    }-->
+<!--                });-->
+<!--            });-->
+
+<!--            $(document).on("click", ".btn-reply", function() {-->
+<!--                selectedParentId = $(this).data("id");-->
+<!--                const nick = $(this).data("nick");-->
+<!--                $("#replyTargetName").text(`@${nick}님에게 답글 남기는 중`);-->
+<!--                $("#replyIndicator").removeClass("hidden");-->
+<!--                $("#commentInput").focus();-->
+<!--            });-->
+
+<!--            $(document).on("click", ".btn-toggle-replies", function () {-->
+<!--                const parentId = $(this).data("id");-->
+<!--                const $replies = $(".reply-item[data-parent='" + parentId + "']");-->
+<!--                const isHidden = $replies.first().hasClass("hidden");-->
+
+<!--                $replies.toggleClass("hidden");-->
+
+<!--                if (isHidden) {-->
+<!--                    $(this).text("── 답글 접기");-->
+<!--                } else {-->
+<!--                    $(this).text("── 답글 " + $replies.length + "개 보기");-->
+<!--                }-->
+<!--            });-->
+<!--            $(document).on("click", ".btn-comment-like", function () {-->
+<!--                const $btn = $(this);-->
+<!--                const commentId = Number($btn.data("comment-id"));-->
+<!--                if (!commentId) return;-->
+
+<!--                const $icon = $btn.find("i.bi");-->
+
+<!--                const isLiked = $icon.hasClass("bi-heart-fill");-->
+
+<!--                $.ajax({-->
+<!--                    url: isLiked ? "/comment/unlike" : "/comment/like",-->
+<!--                    type: isLiked ? "DELETE" : "POST",-->
+<!--                    data: { commentId: commentId },-->
+<!--                    success: function (response) {-->
+<!--                        if (response && response.result === "success") {-->
+<!--                            loadComments(currentPostId);-->
+<!--                        } else {-->
+<!--                            alert(response?.message || "처리 실패");-->
+<!--                        }-->
+<!--                    },-->
+<!--                    error: function () {-->
+<!--                        alert("통신 에러");-->
+<!--                    }-->
+<!--                });-->
+<!--            });-->
+
+
+<!--            $(document).on("click", "#modalLikeBtn", function () {-->
+<!--                const $icon = $("#modalLikeIcon");-->
+<!--                const $count = $("#modalLikeCount");-->
+
+<!--                const isLiked = $icon.hasClass("bi-heart-fill");-->
+<!--                const url = isLiked ? "/post/unlike" : "/post/like";-->
+<!--                const method = isLiked ? "DELETE" : "POST";-->
+
+<!--                if (!window.currentPostId) {-->
+<!--                    alert("postId가 없습니다. 모달을 다시 열어주세요.");-->
+<!--                    return;-->
+<!--                }-->
+
+<!--                $.ajax({-->
+<!--                    type: method,-->
+<!--                    url: url,-->
+<!--                    data: { postId: window.currentPostId },-->
+<!--                    success: function (response) {-->
+<!--                        if (response && response.result === "success") {-->
+<!--                            const now = parseInt($count.text(), 10) || 0;-->
+
+<!--                            if (isLiked) {-->
+<!--                                $icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart text-dark");-->
+<!--                                $count.text(Math.max(0, now - 1));-->
+<!--                            } else {-->
+<!--                                $icon.removeClass("bi-heart text-dark").addClass("bi-heart-fill text-danger");-->
+<!--                                $count.text(now + 1);-->
+<!--                            }-->
+<!--                        } else {-->
+<!--                            alert(response?.message || "처리 실패");-->
+<!--                        }-->
+<!--                    },-->
+<!--                    error: function () {-->
+<!--                        alert("통신 에러");-->
+<!--                    }-->
+<!--                });-->
+<!--            });-->
+
+<!--        });-->
+<!--    </script>-->
 </th:block>

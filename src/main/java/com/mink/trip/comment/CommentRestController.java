@@ -31,8 +31,6 @@ public class CommentRestController {
 
         long userId = (Long) session.getAttribute("userId");
 
-        Map<String, String> result = new HashMap<>();
-
         if(commentService.createComment(postId, userId, comments, parentId)){
             return ApiResponse.success("댓글 성공");
         }else {

@@ -48,193 +48,176 @@
             </div>
         </div>
     </main>
-
     <th:block th:replace="post/popup_detail :: PopupDetail"></th:block>
-
+    <script>lucide.createIcons();</script>
     <script>
+        $(document).on("click", ".more-btn", function () {
+            $(".edit-post-btn, .delete-post-btn, .edit-wishlist-btn, .delete-wishlist-btn").addClass("d-none");
 
-        (function () {
-            if (window.__TimelineMoreModalInitialized) return;
-            window.__TimelineMoreModalInitialized = true;
+            const $btn = $(this);
+            const $modal = $("#moreModal");
+            const type = String($btn.data("type") || "").toUpperCase() || ($btn.data("wishlist-id") ? "WISHLIST" : "POST");
+            $modal.attr("data-type", type);
 
-            window.moreModalState = window.moreModalState || { type: null, data: {} };
+            if (type === "WISHLIST") {
+                $(".edit-wishlist-btn, .delete-wishlist-btn").removeClass("d-none");
 
-            function showBsModal(id) {
-                const $m = $("#" + id);
-                if (!$m.length) return;
-                $m.modal({ backdrop: "static", keyboard: false });
-                $m.modal("show");
+                $modal.attr({
+                    "data-wishlist-id": $btn.data("wishlist-id") || "",
+                    "data-country-id": $btn.data("country-id") || "",
+                    "data-city-name": $btn.data("city-name") || "",
+                    "data-period": $btn.data("period") || "",
+                    "data-start-date": $btn.data("start-date") || "",
+                    "data-end-date": $btn.data("end-date") || "",
+                    "data-memo": $btn.data("memo") || "",
+                    "data-latitude": $btn.data("latitude") || 0.0,
+                    "data-longitude": $btn.data("longitude") || 0.0
+                });
+            } else {
+                $(".edit-post-btn, .delete-post-btn").removeClass("d-none");
+
+                $modal.attr({
+                    "data-post-id": $btn.data("post-id") || "",
+                    "data-contents": $btn.data("contents") || "",
+                    "data-country-id": $btn.data("country-id") || "",
+                    "data-city-name": $btn.data("city-name") || "",
+                    "data-place-name": $btn.data("place-name") || "",
+                    "data-atmosphere": $btn.data("atmosphere") || "",
+                    "data-music-url": $btn.data("music-url") || ""
+                });
             }
-            function hideBsModal(id) {
-                const $m = $("#" + id);
-                if (!$m.length) return;
-                $m.modal("hide");
-            }
 
-            $(document).off("click", ".more-btn").on("click", ".more-btn", function () {
-                $(".edit-post-btn, .delete-post-btn, .edit-wishlist-btn, .delete-wishlist-btn").addClass("d-none");
-
-                const $btn = $(this);
-                const type = String($btn.data("type") || "POST").toUpperCase();
-
-                if (type === "WISHLIST") {
-                    $(".edit-wishlist-btn, .delete-wishlist-btn").removeClass("d-none");
-
-                    window.moreModalState = {
-                        type: "WISHLIST",
-                        data: {
-                            wishlistId: $btn.data("wishlist-id"),
-                            countryId: $btn.data("country-id"),
-                            cityName: $btn.data("city-name"),
-                            period: $btn.data("period"),
-                            startDate: $btn.data("start-date"),
-                            endDate: $btn.data("end-date"),
-                            memo: $btn.data("memo"),
-                            latitude: $btn.data("latitude"),
-                            longitude: $btn.data("longitude")
-                        }
-                    };
-                } else {
-                    $(".edit-post-btn, .delete-post-btn").removeClass("d-none");
-
-                    window.moreModalState = {
-                        type: "POST",
-                        data: {
-                            postId: $btn.data("post-id"),
-                            contents: $btn.data("contents"),
-                            countryId: $btn.data("country-id"),
-                            cityName: $btn.data("city-name"),
-                            placeName: $btn.data("place-name"),
-                            atmosphere: $btn.data("atmosphere"),
-                            musicUrl: $btn.data("music-url")
-                        }
-                    };
-                }
-
-                showBsModal("moreModal");
-            });
-
-            $(document).off("click", ".delete-post-btn").on("click", ".delete-post-btn", function () {
-                const postId = window.moreModalState?.data?.postId;
-                if (!postId) return;
-
-                $.ajax({
-                    type: "delete",
-                    url: "/post/remove",
-                    data: { postId },
-                    success: function (response) {
-                        if(response.result == "success") {
-                            location.reload();
-                        } else {
-                            alert("게시물 삭제 실패!");
-                        }
-                    },
-                    error: function () { alert("게시물 삭제 에러"); }
-                });
-            });
-
-            $(document).off("click", ".delete-wishlist-btn").on("click", ".delete-wishlist-btn", function () {
-                const wishlistId = window.moreModalState?.data?.wishlistId;
-                if (!wishlistId) return;
-
-                $.ajax({
-                    type: "delete",
-                    url: "/wishlist/remove",
-                    data: { wishlistId },
-                    success: function (response) {
-                        if(response.result == "success") {
-                            location.reload();
-                        } else {
-                            alert("위시리스트 삭제 실패!");
-                        }
-                    },
-                    error: function () { alert("위시리스트 삭제 에러"); }
-                });
-            });
-
-            $(document).off("click", ".edit-post-btn").on("click", ".edit-post-btn", function () {
-                const st = window.moreModalState;
-                if (!st || st.type !== "POST") return;
-
-                hideBsModal("moreModal");
-
-                setTimeout(() => {
-                    $("#postCreateModal").modal({ backdrop: "static", keyboard: false });
-                    $("#postCreateModal").trigger("open-edit-post", [st.data]);
-                }, 150);
-            });
-
-            $(document).off("click", ".edit-wishlist-btn").on("click", ".edit-wishlist-btn", function () {
-                const st = window.moreModalState;
-                if (!st || st.type !== "WISHLIST") return;
-
-                hideBsModal("moreModal");
-
-                setTimeout(() => {
-                    $("#wishCreateModal").modal({ backdrop: "static", keyboard: false });
-                    $("#wishCreateModal").trigger("open-edit-wish", [st.data]);
-                }, 150);
-            });
-            $(".like-btn").on("click", function() {
-                let postId = $(this).data("post-id");
-                $.ajax({
-                    type:"post"
-                    , url:"/post/like"
-                    , data:{"postId":postId}
-                    , success:function(response)
-                    {
-                        if(response.result == "success") {
-                            location.reload();
-                        }
-                        else { alert("좋아요 실패!");
-                        }
-                    }
-                    , error:function() {
-                        alert("좋아요 에러!");
-                    } });
-            });
-            $(".unlike-btn").on("click", function() {
-                let postId = $(this).data("post-id");
-                $.ajax({
-                    type:"delete"
-                    , url:"/post/unlike"
-                    , data:{"postId":postId}
-                    , success:function(response) {
-                        if(response.result == "success") {
-                            location.reload();
-                        } else {
-                            alert("좋아요 취소 실패!");
-                        }
-                    }
-                    , error:function() {
-                        alert("좋아요 취소 에러!");
-                    }
-                });
-            });
-
-        })();
+            $("#moreModal").modal("show");
+        });
     </script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        $(".delete-post-btn").on("click", function () {
+            const postId = $("#moreModal").attr("data-post-id");
 
-            document.querySelectorAll(".feed-swiper").forEach((swiperEl) => {
+            if (!postId) {
+                alert("postId 없음");
+                return;
+            }
 
-                if (swiperEl.swiper) return;
-
-                new Swiper(swiperEl, {
-                    slidesPerView: 1,
-                    spaceBetween: 0,
-                    loop: false,
-                    pagination: {
-                        el: swiperEl.querySelector(".swiper-pagination"),
-                        clickable: true
-                    },
-                    observer: true,
-                    observeParents: true
-                });
+            $.ajax({
+                type: "DELETE",
+                url: "/post/remove",
+                data: { "postId":postId },
+                success: function (response) {
+                    if(response.result == "success") {
+                        location.reload();
+                    } else {
+                        alert("게시물 삭제 실패!");
+                    }
+                },
+                error: function () {
+                    alert("게시물 삭제 에러");
+                }
             });
-
         });
+        $(".delete-wishlist-btn").on("click", function () {
+            const wishlistId = $("#moreModal").attr("data-wishlist-id");
+
+            if (!wishlistId) {
+                alert("wishlistId 없음");
+                return;
+            }
+
+            $.ajax({
+                type: "DELETE",
+                url: "/wishlist/remove",
+                data: { wishlistId: wishlistId },
+                success: function (response) {
+                    if (response.result === "success") {
+                        location.reload();
+                    } else {
+                        alert("위시리스트 삭제 실패!");
+                    }
+                },
+                error: function () {
+                    alert("위시리스트 삭제 에러");
+                }
+            });
+        });
+
+
+        $(".like-btn").on("click", function() {
+            let postId = $(this).data("post-id");
+            $.ajax({
+                type:"POST"
+                , url:"/post/like"
+                , data:{"postId":postId}
+                , success:function(response)
+                {
+                    if(response.result == "success") {
+                        location.reload();
+                    }
+                    else { alert("좋아요 실패!");
+                    }
+                }
+                , error:function() {
+                    alert("좋아요 에러!");
+                }
+            });
+        });
+        $(".unlike-btn").on("click", function() {
+            let postId = $(this).data("post-id");
+            $.ajax({
+                type:"DELETE"
+                , url:"/post/unlike"
+                , data:{"postId":postId}
+                , success:function(response) {
+                    if(response.result == "success") {
+                        location.reload();
+                    } else {
+                        alert("좋아요 취소 실패!");
+                    }
+                }
+                , error:function() {
+                    alert("좋아요 취소 에러!");
+                }
+            });
+        });
+        $(document).on("click", ".edit-post-btn", function () {
+            const $m = $("#moreModal");
+            const data = {
+                postId: $m.attr("data-post-id"),
+                contents: $m.attr("data-contents"),
+                countryId: $m.attr("data-country-id"),
+                cityName: $m.attr("data-city-name"),
+                placeName: $m.attr("data-place-name"),
+                atmosphere: $m.attr("data-atmosphere"),
+                musicUrl: $m.attr("data-music-url")
+            };
+
+            $("#moreModal").modal("hide");
+
+            setTimeout(function () {
+                $("#postCreateModal").modal({ backdrop: "static", keyboard: false });
+                $("#postCreateModal").trigger("open-edit-post", [data]);
+            }, 150);
+        });
+    </script>
+        <script>
+            function initFeedSwipers() {
+                document.querySelectorAll(".feed-swiper").forEach(function (el) {
+                    if (el.dataset.swiperInited === "1") return;
+                    el.dataset.swiperInited = "1";
+
+                    const paginationEl = el.querySelector(".swiper-pagination");
+
+                    new Swiper(el, {
+                        slidesPerView: 1,
+                        spaceBetween: 0,
+                        loop: false,
+                        pagination: { el: paginationEl || null, clickable: true },
+                        observer: true,
+                        observeParents: true
+                    });
+                });
+            }
+
+            document.addEventListener("DOMContentLoaded", initFeedSwipers);
     </script>
     <th:block th:replace="post/popup_detail :: PopupDetailScript"></th:block>
 

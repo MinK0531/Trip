@@ -49,100 +49,100 @@
 </div>
 
 <th:block layout:fragment="script">
-    <script>
-        $(function () {
+<!--    <script>-->
+<!--        $(function () {-->
 
-            const notifications = [
-                { id: 1, type: 'like', user: '여행러버', action: '님이 회원님의 게시물을 좋아합니다', post: '에펠탑에서의 마법 같은 순간', time: '5분 전', read: false },
-                { id: 2, type: 'comment', user: '세계일주중', action: '님이 댓글을 남겼습니다', comment: '사진 정말 잘 찍으셨네요!', time: '30분 전', read: false },
-                { id: 3, type: 'share', user: '모험가123', action: '님이 회원님의 게시물을 공유했습니다', post: '도쿄의 밤거리', time: '1시간 전', read: true },
-                { id: 4, type: 'follow', user: '여행마니아', action: '님이 회원님을 팔로우하기 시작했습니다', time: '2시간 전', read: true },
-                { id: 5, type: 'like', user: '세계여행자', action: '님이 회원님의 게시물을 좋아합니다', post: '뉴욕의 스카이라인', time: '3시간 전', read: true },
-                { id: 6, type: 'comment', user: '탐험가', action: '님이 댓글을 남겼습니다', comment: '저도 다음 달에 가요!', time: '5시간 전', read: true }
-            ];
+<!--            const notifications = [-->
+<!--                { id: 1, type: 'like', user: '여행러버', action: '님이 회원님의 게시물을 좋아합니다', post: '에펠탑에서의 마법 같은 순간', time: '5분 전', read: false },-->
+<!--                { id: 2, type: 'comment', user: '세계일주중', action: '님이 댓글을 남겼습니다', comment: '사진 정말 잘 찍으셨네요!', time: '30분 전', read: false },-->
+<!--                { id: 3, type: 'share', user: '모험가123', action: '님이 회원님의 게시물을 공유했습니다', post: '도쿄의 밤거리', time: '1시간 전', read: true },-->
+<!--                { id: 4, type: 'follow', user: '여행마니아', action: '님이 회원님을 팔로우하기 시작했습니다', time: '2시간 전', read: true },-->
+<!--                { id: 5, type: 'like', user: '세계여행자', action: '님이 회원님의 게시물을 좋아합니다', post: '뉴욕의 스카이라인', time: '3시간 전', read: true },-->
+<!--                { id: 6, type: 'comment', user: '탐험가', action: '님이 댓글을 남겼습니다', comment: '저도 다음 달에 가요!', time: '5시간 전', read: true }-->
+<!--            ];-->
 
-            function getIcon(type) {
-                return {
-                    like: 'heart',
-                    comment: 'message-circle',
-                    share: 'share-2',
-                    follow: 'user-plus'
-                }[type] || 'bell';
-            }
+<!--            function getIcon(type) {-->
+<!--                return {-->
+<!--                    like: 'heart',-->
+<!--                    comment: 'message-circle',-->
+<!--                    share: 'share-2',-->
+<!--                    follow: 'user-plus'-->
+<!--                }[type] || 'bell';-->
+<!--            }-->
 
-            function getIconColor(type) {
-                return {
-                    like: 'text-red-500 fill-red-500',
-                    comment: 'text-blue-500',
-                    share: 'text-green-500',
-                    follow: 'text-purple-500'
-                }[type] || 'text-gray-500';
-            }
+<!--            function getIconColor(type) {-->
+<!--                return {-->
+<!--                    like: 'text-red-500 fill-red-500',-->
+<!--                    comment: 'text-blue-500',-->
+<!--                    share: 'text-green-500',-->
+<!--                    follow: 'text-purple-500'-->
+<!--                }[type] || 'text-gray-500';-->
+<!--            }-->
 
-            function renderNotifications(tab) {
-                const list = $('#notificationList');
-                list.empty();
+<!--            function renderNotifications(tab) {-->
+<!--                const list = $('#notificationList');-->
+<!--                list.empty();-->
 
-                const filtered = tab === 'all'
-                    ? notifications
-                    : notifications.filter(n => n.type === tab);
+<!--                const filtered = tab === 'all'-->
+<!--                    ? notifications-->
+<!--                    : notifications.filter(n => n.type === tab);-->
 
-                if (filtered.length === 0) {
-                    $('#emptyMessage').removeClass('hidden');
-                    return;
-                }
+<!--                if (filtered.length === 0) {-->
+<!--                    $('#emptyMessage').removeClass('hidden');-->
+<!--                    return;-->
+<!--                }-->
 
-                $('#emptyMessage').addClass('hidden');
+<!--                $('#emptyMessage').addClass('hidden');-->
 
-                filtered.forEach(n => {
-                    list.append(`
-                <div class="p-4 flex items-start gap-3 hover:bg-gray-50 cursor-pointer
-                            ${!n.read ? 'bg-blue-50' : ''}">
+<!--                filtered.forEach(n => {-->
+<!--                    list.append(`-->
+<!--                <div class="p-4 flex items-start gap-3 hover:bg-gray-50 cursor-pointer-->
+<!--                            ${!n.read ? 'bg-blue-50' : ''}">-->
 
-                    <div class="relative flex-shrink-0">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500
-                                    flex items-center justify-center text-white font-bold">
-                            ${n.user.charAt(0)}
-                        </div>
-                        <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border">
-                            <i data-lucide="${getIcon(n.type)}"
-                               class="w-4 h-4 ${getIconColor(n.type)}"></i>
-                        </div>
-                    </div>
+<!--                    <div class="relative flex-shrink-0">-->
+<!--                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500-->
+<!--                                    flex items-center justify-center text-white font-bold">-->
+<!--                            ${n.user.charAt(0)}-->
+<!--                        </div>-->
+<!--                        <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border">-->
+<!--                            <i data-lucide="${getIcon(n.type)}"-->
+<!--                               class="w-4 h-4 ${getIconColor(n.type)}"></i>-->
+<!--                        </div>-->
+<!--                    </div>-->
 
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm">
-                            <span class="font-semibold text-gray-900">${n.user}</span>
-                            <span class="text-gray-700">${n.action}</span>
-                        </p>
-                        ${n.post ? `<p class="text-sm text-gray-500 mt-1 truncate">"${n.post}"</p>` : ''}
-                        ${n.comment ? `<p class="text-sm text-gray-500 mt-1 italic truncate">"${n.comment}"</p>` : ''}
-                        <p class="text-xs text-gray-400 mt-1">${n.time}</p>
-                    </div>
+<!--                    <div class="flex-1 min-w-0">-->
+<!--                        <p class="text-sm">-->
+<!--                            <span class="font-semibold text-gray-900">${n.user}</span>-->
+<!--                            <span class="text-gray-700">${n.action}</span>-->
+<!--                        </p>-->
+<!--                        ${n.post ? `<p class="text-sm text-gray-500 mt-1 truncate">"${n.post}"</p>` : ''}-->
+<!--                        ${n.comment ? `<p class="text-sm text-gray-500 mt-1 italic truncate">"${n.comment}"</p>` : ''}-->
+<!--                        <p class="text-xs text-gray-400 mt-1">${n.time}</p>-->
+<!--                    </div>-->
 
-                    ${!n.read ? `<div class="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>` : ''}
-                </div>
-            `);
-                });
+<!--                    ${!n.read ? `<div class="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>` : ''}-->
+<!--                </div>-->
+<!--            `);-->
+<!--                });-->
 
-                lucide.createIcons();
-            }
+<!--                lucide.createIcons();-->
+<!--            }-->
 
-            $('.tab-btn').on('click', function () {
-                $('.tab-btn')
-                    .removeClass('active border-blue-600 text-blue-600')
-                    .addClass('border-transparent text-gray-500');
+<!--            $('.tab-btn').on('click', function () {-->
+<!--                $('.tab-btn')-->
+<!--                    .removeClass('active border-blue-600 text-blue-600')-->
+<!--                    .addClass('border-transparent text-gray-500');-->
 
-                $(this)
-                    .addClass('active border-blue-600 text-blue-600');
+<!--                $(this)-->
+<!--                    .addClass('active border-blue-600 text-blue-600');-->
 
-                renderNotifications($(this).data('tab'));
-            });
+<!--                renderNotifications($(this).data('tab'));-->
+<!--            });-->
 
-            renderNotifications('all');
-        });
+<!--            renderNotifications('all');-->
+<!--        });-->
 
-    </script>
+<!--    </script>-->
 
 </th:block>
 
