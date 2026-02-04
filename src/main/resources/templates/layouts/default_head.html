@@ -52,9 +52,8 @@
 
                 <a href="/mypage/map" class="ml-4 flex items-center gap-3">
                     <div class="w-9 h-9 rounded-full flex items-center justify-center text-white border-2  cursor-pointer">
-                        <img id="headerProfileImg"
-                             src="/img/profile.png"
-                             alt="Profile"
+                        <img id="navProfileImg"
+                             th:src="${session.userProfileImg != null ? session.userProfileImg : '/img/profile.png'}"
                              class="profile-pic profile-sty">
                     </div>
                 </a>
@@ -70,33 +69,8 @@
         </div>
     </div>
 </nav>
-<script>
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     lucide.createIcons();
-    //
-    //     const currentPath = window.location.pathname;
-    //
-    //     const navItems = document.querySelectorAll('.nav-item');
-    //
-    //     navItems.forEach(item => {
-    //         const href = item.getAttribute('href');
-    //
-    //         if (href && currentPath === href) {
-    //             item.classList.remove('text-gray-600');
-    //             item.classList.add('text-blue-600', 'bg-blue-50');
-    //
-    //             const icon = item.querySelector('svg');
-    //             if (icon) {
-    //                 icon.style.fill = 'currentColor';
-    //                 icon.style.fillOpacity = '0.2';
-    //             }
-    //         }
-    //     });
-    // });
 
-</script>
 
-<th:block layout:fragment="script"></th:block>
 <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet" />
 <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css" rel="stylesheet" />
 
@@ -116,12 +90,44 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="/js/profile-common.js"></script>
 <script>lucide.createIcons();</script>
 <th:block layout:fragment="fragment"></th:block>
+<th:block layout:fragment="script"></th:block>
+<script>
+    const ModalSwiper = (function () {
+        let swiper = null;
+
+        function ensure() {
+            if (swiper) return;
+
+            swiper = new Swiper(".modal-swiper", {
+                slidesPerView: 1,
+                spaceBetween: 0,
+                pagination: {
+                    el: ".modal-swiper .swiper-pagination",
+                    clickable: true
+                },
+                keyboard: { enabled: true }
+            });
+        }
+
+        function destroy() {
+            if (!swiper) return;
+            swiper.destroy(true, true);
+            swiper = null;
+        }
+
+        function get() {
+            return swiper;
+        }
+
+        return { ensure, destroy, get };
+    })();
+</script>
+
+
 <th:block th:replace="layouts/create :: createPopup"></th:block>
 <th:block th:replace="layouts/create :: createPopupScript"></th:block>
-<th:block layout:fragment="script"></th:block>
 
 </body>
 </html>

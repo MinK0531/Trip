@@ -284,7 +284,11 @@
                 initDatePickersOnce();
             });
 
-            $modal.on("show.bs.modal", function () {
+            $modal.on("shown.bs.modal", function () {
+                initDatePickersOnce();
+            });
+
+            $modal.on("hidden.bs.modal", function () {
                 resetDatePickers();
             });
 

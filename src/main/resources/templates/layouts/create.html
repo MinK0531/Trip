@@ -22,6 +22,7 @@
 </th:block>
 
 <th:block th:fragment="createPopupScript">
+
     <script>
         function openPostModal() {
             $('#createChoiceModal').modal('hide');
@@ -45,18 +46,6 @@
             }, 300);
         }
 
-    <!--    $(document).on('change', '#postImageFile', function () {-->
-    <!--        $('#postFileName').text(-->
-    <!--            this.files[0] ? this.files[0].name : ''-->
-    <!--        );-->
-    <!--    });-->
-
-    <!--    $('#postCreateModal, #wishCreateModal').on('shown.bs.modal', function () {-->
-
-    <!--        if (typeof lucide !== 'undefined') {-->
-    <!--            lucide.createIcons();-->
-    <!--        }-->
-    <!--    });-->
     </script>
     <th:block th:replace="post/write :: PostPopupScript"></th:block>
     <th:block th:replace="wishlist/write :: WishlistPopupScript"></th:block>

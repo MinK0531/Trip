@@ -47,7 +47,6 @@
             </div>
         </div>
     </main>
-    <th:block th:replace="post/popup_detail :: PopupDetail"></th:block>
     <script>lucide.createIcons();</script>
     <script>
         $(document).on("click", ".more-btn", function () {
@@ -213,6 +212,7 @@
                 $("#wishCreateModal").trigger("open-edit-wish", [data]);
             }, 150);
         });
+
     </script>
         <script>
             function initFeedSwipers() {

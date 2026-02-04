@@ -346,7 +346,7 @@ public class PostService {
             return PostDetail.builder()
                     .id(post.getId())
                     .userId(post.getUserId())
-                    .nickName(user != null ? user.getNickName() : "Unknown")
+                    .nickName(user.getNickName())
                     .countryName(countryName)
                     .cityName(post.getCityName())
                     .contents(post.getContents())
@@ -357,6 +357,63 @@ public class PostService {
                     .imageList(imageDetails)
                     .build();
         }).toList();
+    }
+
+    public PostDetail getPostDetail(long userId, long postId) {
+
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if (optionalPost.isEmpty()) return null;
+
+        Post post = optionalPost.get();
+
+        User user = userService.getUserById(post.getUserId());
+        if (user == null) return null;
+
+        UserProfile up = userProfileRepository.findByUserId(post.getUserId());
+        String profileImg = null;
+        if (up != null) {
+            profileImg = up.getProfileImg();
+        }
+
+        int likeCount = likeService.countByPostId(post.getId());
+        boolean isLike = likeService.isLikeByPostIdAndUserId(post.getId(), userId);
+
+        String countryName = countryRepository.findById(post.getCountryId())
+                .map(Country::getCountryName)
+                .orElse("알 수 없는 나라");
+
+        List<PostImageDetail> imageDetails = post.getImages().stream()
+                .sorted((a, b) -> Integer.compare(a.getSortOrder(), b.getSortOrder()))
+                .map(img -> PostImageDetail.builder()
+                        .id(img.getId())
+                        .imagePath(img.getImagePath())
+                        .sortOrder(img.getSortOrder())
+                        .build())
+                .toList();
+
+        List<CommentDetail> commentList = commentService.getCommentList(post.getId(), userId);
+
+        return PostDetail.builder()
+                .id(post.getId())
+                .userId(post.getUserId())
+                .nickName(user.getNickName())
+                .countryId(post.getCountryId())
+                .countryName(countryName)
+                .cityName(post.getCityName())
+                .contents(post.getContents())
+                .atmosphere(post.getAtmosphere())
+                .placeName(post.getPlaceName())
+                .musicUrl(post.getMusicUrl())
+                .latitude(post.getLatitude())
+                .longitude(post.getLongitude())
+                .profileImg(profileImg)
+                .likeCount(likeCount)
+                .isLike(isLike)
+                .commentCount(commentList.size())
+                .commentList(commentList)
+                .createdAt(post.getCreatedAt())
+                .imageList(imageDetails)
+                .build();
     }
 
 }

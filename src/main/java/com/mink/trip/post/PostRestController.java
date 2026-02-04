@@ -1,6 +1,7 @@
 package com.mink.trip.post;
 
 import com.mink.trip.common.dto.ApiResponse;
+import com.mink.trip.post.dto.PostDetail;
 import com.mink.trip.post.dto.PostImageDetail;
 import com.mink.trip.post.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -123,6 +124,22 @@ public class PostRestController {
         }
 
     }
+//    @GetMapping("/detail")
+//    public ApiResponse<PostDetail> detail(
+//            @RequestParam long postId,
+//            HttpSession session
+//    ) {
+//        if (session == null || session.getAttribute("userId") == null) {
+//            return ApiResponse.fail("로그인이 필요합니다.");
+//        }
+//        long userId = (Long) session.getAttribute("userId");
+//
+//        PostDetail detail = postService.getPostDetail(userId, postId);
+//        if (detail == null) {
+//            return ApiResponse.fail("게시물을 찾을 수 없습니다.");
+//        }
+//        return ApiResponse.success("게시물 상세 조회 성공", detail);
+//    }
 
 
 }

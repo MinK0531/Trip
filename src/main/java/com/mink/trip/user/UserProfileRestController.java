@@ -37,15 +37,15 @@ public class UserProfileRestController {
             return ApiResponse.fail("로그인이 필요하다");
         }
 
-        UserProfileDetail data =
+        UserProfileDetail detail =
                 userProfileService.upsert(userId, profileWord, profileImg);
 
-        if (data == null) {
+        if (detail == null) {
             return ApiResponse.fail("프로필 저장 실패");
         }
-        session.setAttribute("userProfileImg", data.getProfileImg());
-        session.setAttribute("userProfileWord", data.getProfileWord());
-        return ApiResponse.success("프로필 저장 성공", data);
+        session.setAttribute("userProfileImg", detail.getProfileImg());
+        session.setAttribute("userProfileWord", detail.getProfileWord());
+        return ApiResponse.success("프로필 저장 성공", detail);
     }
 
     private Long getLoginUserId(HttpSession session) {
@@ -59,13 +59,15 @@ public class UserProfileRestController {
         Long userId = getLoginUserId(session);
         if (userId == null) return ApiResponse.fail("로그인이 필요하다");
 
-        UserProfileDetail data = userProfileService.deleteMyProfileImage(userId);
-        if (data == null) return ApiResponse.fail("삭제 실패");
+        UserProfileDetail detail = userProfileService.deleteMyProfileImage(userId);
+        if (detail == null) return ApiResponse.fail("프로필 이미지 삭제 실패");
 
         session.setAttribute("userProfileImg", null);
+        session.setAttribute("userProfileWord", detail.getProfileWord());
 
-        return ApiResponse.success("프로필 이미지 삭제 성공", data);
+        return ApiResponse.success("프로필 이미지 삭제 성공", detail);
     }
+
 
 
 }

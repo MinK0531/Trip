@@ -17,191 +17,191 @@
 
 </th:block>
 <th:block th:fragment="countryListScript">
-<!--    <script>-->
-<!--        let ignoreNextDocClick = false;-->
+    <script>
+        let ignoreNextDocClick = false;
 
-<!--        function openCountryListPanel(meta){-->
-<!--            $("#countryPanelName").text(meta.en || meta.name || "COUNTRY");-->
+        function openCountryListPanel(meta){
+            $("#countryPanelName").text(meta.en || meta.name || "COUNTRY");
 
-<!--            const $panel = $("#countryListPanel");-->
-<!--            $panel.removeClass("hidden");-->
-<!--            requestAnimationFrame(() => $panel.addClass("show"));-->
+            const $panel = $("#countryListPanel");
+            $panel.removeClass("hidden");
+            requestAnimationFrame(() => $panel.addClass("show"));
 
-<!--            loadCountryPosts(meta.id);-->
-<!--        }-->
+            loadCountryPosts(meta.id);
+        }
 
-<!--        function closeCountryListPanel(){-->
-<!--            const $panel = $("#countryListPanel");-->
-<!--            $panel.removeClass("show");-->
-<!--            setTimeout(() => $panel.addClass("hidden"), 200);-->
-<!--        }-->
+        function closeCountryListPanel(){
+            const $panel = $("#countryListPanel");
+            $panel.removeClass("show");
+            setTimeout(() => $panel.addClass("hidden"), 200);
+        }
 
-<!--        function loadCountryPosts(countryId){-->
-<!--            $.ajax({-->
-<!--                url: "/mypage/api/post/listByCountry",-->
-<!--                type: "GET",-->
-<!--                dataType: "json",-->
-<!--                data: { countryId: countryId },-->
-<!--                success: function(response){-->
-<!--                    if (!response || response.result !== "success") {-->
-<!--                        renderCountryTickets([]);-->
-<!--                        return;-->
-<!--                    }-->
-<!--                    renderCountryTickets(response.data || []);-->
-<!--                },-->
-<!--                error: function(){-->
-<!--                    renderCountryTickets([]);-->
-<!--                }-->
-<!--            });-->
-<!--        }-->
-
-
-<!--        function esc(s){-->
-<!--            return (s == null ? "" : String(s))-->
-<!--                .replace(/&/g,"&amp;").replace(/</g,"&lt;")-->
-<!--                .replace(/>/g,"&gt;").replace(/"/g,"&quot;")-->
-<!--                .replace(/'/g,"&#39;");-->
-<!--        }-->
-
-<!--        function renderCountryTickets(list){-->
-<!--            const $grid = $("#countryTicketGrid").empty();-->
-
-<!--            if (!list || list.length === 0){-->
-<!--                $grid.append(`-->
-<!--        <div style="grid-column:1/-1;color:#666;font-weight:800;padding:14px;">-->
-<!--          해당 나라에 게시물이 없습니다.-->
-<!--        </div>-->
-<!--      `);-->
-<!--                return;-->
-<!--            }-->
-
-<!--            list.forEach(p => {-->
-<!--                const img =-->
-<!--                    (p.imagePath || (p.imageList && p.imageList[0] && p.imageList[0].imagePath)) ||-->
-<!--                    "/img/no-image.png";-->
-
-<!--                const date = (p.createdAt || p.date || "").toString().slice(0,10) || "";-->
-<!--                const from = (p.fromCode || "ICN");-->
-<!--                const to   = (p.toCode || (p.airportCode || "LHR"));-->
-<!--                const postId = (p.postId || p.id);-->
-
-<!--                const payload = {-->
-<!--                    postId: postId,-->
-<!--                    countryId: p.countryId,-->
-<!--                    cityName: p.cityName || "",-->
-<!--                    contents: p.contents || "",-->
-<!--                    atmosphere: p.atmosphere || "",-->
-<!--                    placeName: p.placeName || "",-->
-<!--                    musicUrl: p.musicUrl || ""-->
-<!--                };-->
-
-<!--                $grid.append(`-->
-<!--        <div class="country-ticket" data-post-id="${postId}"-->
-<!--             data-edit='${esc(JSON.stringify(payload))}'>-->
-<!--          <div class="ticket-img-wrap">-->
-<!--            <img class="country-ticket-img" src="${img}" alt="">-->
-<!--            <div class="country-ticket-actions">-->
-<!--              <button type="button" class="btn btn-sm btn-light btn-country-edit" title="수정">-->
-<!--                <i class="bi bi-pencil"></i>-->
-<!--              </button>-->
-<!--              <button type="button" class="btn btn-sm btn-danger btn-country-delete" title="삭제">-->
-<!--                <i class="bi bi-trash"></i>-->
-<!--              </button>-->
-<!--            </div>-->
-<!--          </div>-->
-
-<!--          <div class="ticket-divider">-->
-<!--            <div class="right-hole"></div>-->
-<!--          </div>-->
-
-<!--          <div class="country-ticket-body">-->
-<!--            <div class="country-ticket-date">${esc(date)}</div>-->
-<!--            <div class="country-ticket-route">-->
-<!--              <span class="from">${esc(from)}</span>-->
-<!--              <span class="mid">━━</span>-->
-<!--              <span class="to">${esc(to)}</span>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      `);-->
-<!--            });-->
-<!--        }-->
-<!--        $(document).on("click", ".country-ticket", function(e){-->
-<!--            e.stopPropagation();-->
-<!--            const postId = $(this).data("post-id");-->
-<!--            if (!postId) return;-->
-
-<!--            openPostDetailFromMap(postId);-->
-<!--        });-->
-
-<!--        $(document).on("click", "#countryListPanel", function(e){-->
-<!--            e.stopPropagation();-->
-<!--        });-->
-
-<!--        $(document).on("click", "#countryPanelClose", function(e){-->
-<!--            e.stopPropagation();-->
-<!--            closeCountryListPanel();-->
-<!--        });-->
-
-<!--        $(document).on("click", function(){-->
-<!--            if (ignoreNextDocClick) {-->
-<!--                ignoreNextDocClick = false;-->
-<!--                return;-->
-<!--            }-->
-<!--            const $panel = $("#countryListPanel");-->
-<!--            if ($panel.hasClass("hidden")) return;-->
-<!--            closeCountryListPanel();-->
-<!--        });-->
-<!--    </script>-->
-<!--    <script>-->
-<!--        $(document).off("click.countryList", ".btn-country-edit")-->
-<!--            .on("click.countryList", ".btn-country-edit", function(e){-->
-<!--                e.preventDefault();-->
-<!--                e.stopPropagation();-->
-
-<!--                const $card = $(this).closest(".country-ticket");-->
-<!--                const raw = $card.attr("data-edit");-->
-<!--                if (!raw) return;-->
-
-<!--                let data = null;-->
-<!--                try { data = JSON.parse(raw); } catch(_e){ data = null; }-->
-<!--                if (!data || !data.postId) return;-->
-
-<!--                $("#postCreateModal").modal({ backdrop: "static", keyboard: false });-->
-<!--                $("#postCreateModal").trigger("open-edit-post", [data]);-->
-<!--            });-->
-
-<!--        $(document).off("click.countryList", ".btn-country-delete")-->
-<!--            .on("click.countryList", ".btn-country-delete", function(e){-->
-<!--                e.preventDefault();-->
-<!--                e.stopPropagation();-->
-
-<!--                const $card = $(this).closest(".country-ticket");-->
-<!--                const postId = $card.data("post-id");-->
-<!--                if (!postId) return;-->
+        function loadCountryPosts(countryId){
+            $.ajax({
+                url: "/mypage/api/post/listByCountry",
+                type: "GET",
+                dataType: "json",
+                data: { countryId: countryId },
+                success: function(response){
+                    if (!response || response.result !== "success") {
+                        renderCountryTickets([]);
+                        return;
+                    }
+                    renderCountryTickets(response.data || []);
+                },
+                error: function(){
+                    renderCountryTickets([]);
+                }
+            });
+        }
 
 
-<!--                const ok = confirm("이 게시물을 삭제하시겠습니까?");-->
-<!--                if (!ok) return;-->
+        function esc(s){
+            return (s == null ? "" : String(s))
+                .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+                .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+                .replace(/'/g,"&#39;");
+        }
 
-<!--                $.ajax({-->
-<!--                    type: "DELETE",-->
-<!--                    url: "/post/remove",-->
-<!--                    data: { postId: postId },-->
-<!--                    success: function(response){-->
-<!--                        if (response && response.result === "success") {-->
-<!--                            $card.remove();-->
-<!--                            location.reload();-->
+        function renderCountryTickets(list){
+            const $grid = $("#countryTicketGrid").empty();
 
-<!--                        } else {-->
-<!--                            alert("삭제 실패");-->
-<!--                        }-->
-<!--                    },-->
-<!--                    error: function(){-->
-<!--                        alert("삭제 에러");-->
-<!--                    }-->
-<!--                });-->
-<!--            });-->
-<!--    </script>-->
+            if (!list || list.length === 0){
+                $grid.append(`
+        <div style="grid-column:1/-1;color:#666;font-weight:800;padding:14px;">
+          해당 나라에 게시물이 없습니다.
+        </div>
+      `);
+                return;
+            }
+
+            list.forEach(p => {
+                const img =
+                    (p.imagePath || (p.imageList && p.imageList[0] && p.imageList[0].imagePath)) ||
+                    "/img/no-image.png";
+
+                const date = (p.createdAt || p.date || "").toString().slice(0,10) || "";
+                const from = (p.fromCode || "ICN");
+                const to   = (p.toCode || (p.airportCode || "LHR"));
+                const postId = (p.postId || p.id);
+
+                const payload = {
+                    postId: postId,
+                    countryId: p.countryId,
+                    cityName: p.cityName || "",
+                    contents: p.contents || "",
+                    atmosphere: p.atmosphere || "",
+                    placeName: p.placeName || "",
+                    musicUrl: p.musicUrl || ""
+                };
+
+                $grid.append(`
+        <div class="country-ticket" data-post-id="${postId}"
+             data-edit='${esc(JSON.stringify(payload))}'>
+          <div class="ticket-img-wrap">
+            <img class="country-ticket-img" src="${img}" alt="">
+            <div class="country-ticket-actions">
+              <button type="button" class="btn btn-sm btn-light btn-country-edit" title="수정">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-danger btn-country-delete" title="삭제">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="ticket-divider">
+            <div class="right-hole"></div>
+          </div>
+
+          <div class="country-ticket-body">
+            <div class="country-ticket-date">${esc(date)}</div>
+            <div class="country-ticket-route">
+              <span class="from">${esc(from)}</span>
+              <span class="mid">━━</span>
+              <span class="to">${esc(to)}</span>
+            </div>
+          </div>
+        </div>
+      `);
+            });
+        }
+        $(document).on("click", ".country-ticket", function(e){
+            e.stopPropagation();
+            const postId = $(this).data("post-id");
+            if (!postId) return;
+
+            openPostDetailFromMap(postId);
+        });
+
+        $(document).on("click", "#countryListPanel", function(e){
+            e.stopPropagation();
+        });
+
+        $(document).on("click", "#countryPanelClose", function(e){
+            e.stopPropagation();
+            closeCountryListPanel();
+        });
+
+        $(document).on("click", function(){
+            if (ignoreNextDocClick) {
+                ignoreNextDocClick = false;
+                return;
+            }
+            const $panel = $("#countryListPanel");
+            if ($panel.hasClass("hidden")) return;
+            closeCountryListPanel();
+        });
+    </script>
+    <script>
+        $(document).off("click.countryList", ".btn-country-edit")
+            .on("click.countryList", ".btn-country-edit", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+
+                const $card = $(this).closest(".country-ticket");
+                const raw = $card.attr("data-edit");
+                if (!raw) return;
+
+                let data = null;
+                try { data = JSON.parse(raw); } catch(_e){ data = null; }
+                if (!data || !data.postId) return;
+
+                $("#postCreateModal").modal({ backdrop: "static", keyboard: false });
+                $("#postCreateModal").trigger("open-edit-post", [data]);
+            });
+
+        $(document).off("click.countryList", ".btn-country-delete")
+            .on("click.countryList", ".btn-country-delete", function(e){
+                e.preventDefault();
+                e.stopPropagation();
+
+                const $card = $(this).closest(".country-ticket");
+                const postId = $card.data("post-id");
+                if (!postId) return;
+
+
+                const ok = confirm("이 게시물을 삭제하시겠습니까?");
+                if (!ok) return;
+
+                $.ajax({
+                    type: "DELETE",
+                    url: "/post/remove",
+                    data: { postId: postId },
+                    success: function(response){
+                        if (response && response.result === "success") {
+                            $card.remove();
+                            location.reload();
+
+                        } else {
+                            alert("삭제 실패");
+                        }
+                    },
+                    error: function(){
+                        alert("삭제 에러");
+                    }
+                });
+            });
+    </script>
 
 </th:block>

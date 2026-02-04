@@ -2,7 +2,7 @@ package com.mink.trip.user;
 
 import com.mink.trip.common.dto.ApiResponse;
 import com.mink.trip.user.domain.User;
-import com.mink.trip.user.repository.UserRepository;
+import com.mink.trip.user.dto.UserProfileDetail;
 import com.mink.trip.user.service.UserProfileService;
 import com.mink.trip.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,8 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 @RequiredArgsConstructor
 @RequestMapping("/user")
@@ -59,22 +58,25 @@ public class UserRestController {
 
     @PostMapping("/signin-process")
     public ApiResponse<Void> signin(
-            @RequestParam String email
-            , @RequestParam String password
-            , HttpServletRequest request){
-        User user = userService.getUser(email,password);
-
-        if(user != null){
-            HttpSession session = request.getSession();
-
-            session.setAttribute("userId",user.getId());
-            session.setAttribute("userNickName",user.getNickName());
-            session.setAttribute("userCountry", user.getCountryCode());
-
-            return ApiResponse.success("로그인 성공");
-        }else{
+            @RequestParam String email,
+            @RequestParam String password,
+            HttpServletRequest request
+    ) {
+        User user = userService.getUser(email, password);
+        if (user == null) {
             return ApiResponse.fail("로그인 실패");
         }
+
+        UserProfileDetail profile = userProfileService.getMyProfile(user.getId());
+
+        HttpSession session = request.getSession();
+        session.setAttribute("userId", user.getId());
+        session.setAttribute("userNickName", user.getNickName());
+        session.setAttribute("userCountry", user.getCountryCode());
+        session.setAttribute("userProfileImg", profile.getProfileImg());
+        session.setAttribute("userProfileWord", profile.getProfileWord());
+
+        return ApiResponse.success("로그인 성공");
     }
 
 

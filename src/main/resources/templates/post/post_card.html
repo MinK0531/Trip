@@ -6,7 +6,7 @@
         <div class="border-t border-gray-300 border-b relative h-20 flex items-center px-4 overflow-hidden">
             <div class="flex items-center gap-3 z-10">
                 <div class="w-12 h-12 rounded-full border-2 border-gray-100 overflow-hidden bg-orange-100">
-                    <img th:src="${post.profileImg != null && post.profileImg != '' ? post.profileImg : '/img/profile.png'}"
+                    <img th:src="${post.profileImg != null and post.profileImg != '' ? post.profileImg : '/img/profile.png'}"
                          alt="Profile"
                          class="w-full h-full object-cover postcard-profile-img">
                 </div>
@@ -104,7 +104,10 @@
                             th:data-post-id="${post.id}"
                             th:data-nickname="${post.nickName != null ? post.nickName : ''}"
                             th:data-location="|${post.countryName != null ? post.countryName : ''} - ${post.cityName != null ? post.cityName : ''}|"
-                            th:data-content="${post.contents != null ? post.contents : ''}">
+                            th:data-content="${post.contents != null ? post.contents : ''}"
+                            th:data-city-name="${post.cityName}"
+                            th:data-place-name="${post.placeName}"
+                            th:data-atmosphere="${post.atmosphere}">
                         <i class="bi bi-chat text-dark btn-like-icon icon-stroke-thick"></i>
                         <span class="count-text"
                               th:text="${post.commentCount != null ? post.commentCount : 0}">0</span>

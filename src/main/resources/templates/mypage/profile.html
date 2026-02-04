@@ -53,166 +53,110 @@
 </th:block>
 
 <th:block th:fragment="profileScript">
+<script>
+    $(".edit-btn").on("click", function () {
 
-    <script>
+        $.ajax({
+            url: "/user/profile",
+            type: "GET",
+            success: function (response) {
+                if (response.result === "success") {
+                    const profile = response.data || {};
 
-    <!--    function hasCustomProfileImg(src) {-->
-    <!--        if (!src || typeof src !== "string") return false;-->
-    <!--        return src !== DEFAULT_PROFILE_IMG;-->
-    <!--    }-->
+                    $("#profileImgPreview").attr("src", profile.profileImg || "/img/profile.png");
 
-    <!--    function toggleDeleteProfileImgBtn(imgSrc) {-->
-    <!--        if (hasCustomProfileImg(imgSrc)) {-->
-    <!--            $("#btnDeleteProfileImg").removeClass("d-none");-->
-    <!--        } else {-->
-    <!--            $("#btnDeleteProfileImg").addClass("d-none");-->
-    <!--        }-->
-    <!--    }-->
+                    $("#profileWordInput").val(profile.profileWord || "");
+                    $("#profileWordCount").text((profile.profileWord || "").length);
 
-    <!--    function loadMyProfileForModal() {-->
-    <!--        $("#profileEditError").addClass("d-none").text("");-->
+                    $("#btnDeleteProfileImg").toggleClass("d-none", !profile.profileImg);
 
-    <!--        $.ajax({-->
-    <!--            url: "/user/profile",-->
-    <!--            type: "GET",-->
-    <!--            success: function (res) {-->
-    <!--                if (!res || res.result !== "success") {-->
-    <!--                    $("#profileEditError").removeClass("d-none").text(res?.message || "프로필 조회 실패");-->
-    <!--                    return;-->
-    <!--                }-->
+                    $("#profileEditError").addClass("d-none");
 
-    <!--                const p = res.data || {};-->
+                    $("#profileEditModal").modal("show");
+                } else {
+                    alert("프로필 조회 실패!");
+                }
+            },
+            error: function () {
+                alert("프로필 조회 에러!");
+            }
+        });
 
-    <!--                $("#profileWordInput").val(p.profileWord || "");-->
-    <!--                $("#profileWordCount").text((p.profileWord || "").length);-->
+    });
+    $("#profileWordInput").on("input", function () {
+        $("#profileWordCount").text(this.value.length);
+    });
+    $("#profileImgInput").on("change", function () {
+        const file = this.files[0];
+        if (!file) return;
 
-    <!--                $("#profileImgInput").val("");-->
+        const reader = new FileReader();
+        reader.onload = e => {
+            $("#profileImgPreview").attr("src", e.target.result);
+            $("#btnDeleteProfileImg").removeClass("d-none");
+        };
+        reader.readAsDataURL(file);
+    });
+    $("#btnSaveProfile").on("click", function () {
+        const word = $("#profileWordInput").val();
+        const file = $("#profileImgInput")[0].files[0];
 
-    <!--                const imgSrc = p.profileImg ? p.profileImg : DEFAULT_PROFILE_IMG;-->
-    <!--                $("#profileImgPreview").attr("src", imgSrc);-->
+        const formData = new FormData();
+        if (word) formData.append("profileWord", word);
+        if (file) formData.append("profileImg", file);
 
-    <!--                toggleDeleteProfileImgBtn(imgSrc);-->
-    <!--            },-->
-    <!--            error: function () {-->
-    <!--                $("#profileEditError").removeClass("d-none").text("프로필 조회 중 오류");-->
-    <!--            }-->
-    <!--        });-->
-    <!--    }-->
+        $.ajax({
+            url: "/user/profile/save",
+            type: "PUT",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.result === "success") {
+                    const profile = response.data || {};
 
-    <!--    function saveMyProfile() {-->
-    <!--        $("#profileEditError").addClass("d-none").text("");-->
+                    const img = (profile.profileImg) ? profile.profileImg : "/img/profile.png";
+                    const word = (profile.profileWord) ? profile.profileWord : "-";
 
-    <!--        const profileWord = ($("#profileWordInput").val() || "").trim();-->
-    <!--        const file = $("#profileImgInput")[0].files[0];-->
+                    $("#navProfileImg").attr("src", img);
 
-    <!--        const formData = new FormData();-->
-    <!--        formData.append("profileWord", profileWord);-->
-    <!--        if (file) formData.append("profileImg", file);-->
+                    $("#btnDeleteProfileImg").toggleClass("d-none", !profile.profileImg);
+                    $(".profileWordText").text(word);
 
-    <!--        $.ajax({-->
-    <!--            url: "/user/profile/save",-->
-    <!--            type: "PUT",-->
-    <!--            data: formData,-->
-    <!--            processData: false,-->
-    <!--            contentType: false,-->
-    <!--            success: function (res) {-->
-    <!--                if (!res || res.result !== "success") {-->
-    <!--                    $("#profileEditError").removeClass("d-none")-->
-    <!--                        .text(res?.message || "프로필 저장 실패이");-->
-    <!--                    return;-->
-    <!--                }-->
+                    $("#profileEditModal").modal("hide");
+                } else {
+                    alert("프로필 수정 실패!");
+                }
+            },
+            error: function () {
+                alert("프로필 수정 에러!");
+            }
+        });
+    });
+    $("#btnDeleteProfileImg").on("click", function () {
+        if (!confirm("프로필 이미지를 삭제할까?")) return;
 
-    <!--                applyProfileToHeader(res.data);-->
-    <!--                applyProfileToDetailUI(res.data);-->
+        $.ajax({
+            url: "/user/profile/delete",
+            type: "DELETE",
+            success: function (response) {
+                if (response.result === "success") {
+                    const profile = response.data || {};
+                    const img = (profile.profileImg) ? profile.profileImg : "/img/profile.png";
+                    const word = (profile.profileWord) ? profile.profileWord : "-";
 
-    <!--                // 저장 후 모달 닫기는 기존 유지 (원하면 이것도 유지로 바꿔줄 수 있다)-->
-    <!--                $("#profileEditModal").modal("hide");-->
-    <!--            },-->
-    <!--            error: function (xhr) {-->
-    <!--                $("#profileEditError").removeClass("d-none")-->
-    <!--                    .text("프로필 저장 중 오류 (status=" + xhr.status + ")");-->
-    <!--            }-->
-    <!--        });-->
-    <!--    }-->
+                    $("#navProfileImg").attr("src", img);
+                    $("#myCommentProfileImg").attr("src", img);
+                    $(".profileWordText").text(word);
 
-    <!--    function hasCustomProfileImg(src) {-->
-    <!--        if (!src || typeof src !== "string") return false;-->
-    <!--        return src !== DEFAULT_PROFILE_IMG;-->
-    <!--    }-->
-
-    <!--    function toggleDeleteProfileImgBtn(imgSrc) {-->
-    <!--        if (hasCustomProfileImg(imgSrc)) {-->
-    <!--            $("#btnDeleteProfileImg").removeClass("d-none");-->
-    <!--        } else {-->
-    <!--            $("#btnDeleteProfileImg").addClass("d-none");-->
-    <!--        }-->
-    <!--    }-->
-
-    <!--    $(document).on("change", "#profileImgInput", function () {-->
-    <!--        const f = this.files && this.files[0];-->
-    <!--        if (!f) return;-->
-
-    <!--        const url = URL.createObjectURL(f);-->
-    <!--        $("#profileImgPreview").attr("src", url);-->
-
-    <!--        toggleDeleteProfileImgBtn(url);-->
-    <!--    });-->
-
-    <!--    $(document).on("click", ".edit-btn", function () {-->
-    <!--        $("#profileEditModal").modal({ backdrop: "static", keyboard: false });-->
-    <!--        loadMyProfileForModal();-->
-    <!--    });-->
-
-    <!--    $(document).on("click", "#btnSaveProfile", function () {-->
-    <!--        saveMyProfile();-->
-    <!--    });-->
-
-    <!--    $(document).on("input", "#profileWordInput", function () {-->
-    <!--        $("#profileWordCount").text(($(this).val() || "").length);-->
-    <!--    });-->
-    <!--</script>-->
-    <!--<script>-->
-
-    <!--    $(document).on("click", "#btnDeleteProfileImg", function (e) {-->
-    <!--        e.preventDefault();-->
-
-    <!--        if (!confirm("프로필 사진만 삭제하시겠습니까?")) return;-->
-
-    <!--        $.ajax({-->
-    <!--            url: "/user/profile/delete",-->
-    <!--            type: "DELETE",-->
-    <!--            success: function (res) {-->
-    <!--                if (!res || res.result !== "success") {-->
-    <!--                    $("#profileEditError")-->
-    <!--                        .removeClass("d-none")-->
-    <!--                        .text(res?.message || "프로필 이미지 삭제 실패");-->
-    <!--                    return;-->
-    <!--                }-->
-
-    <!--                $("#profileImgPreview").attr("src", "/img/profile.png");-->
-    <!--                $("#profileImgInput").val("");-->
-    <!--                $("#btnDeleteProfileImg").addClass("d-none");-->
-
-    <!--                $("#headerProfileImg, .profile-pic.profile-sty, #modalProfileImg, .postcard-profile-img")-->
-    <!--                    .attr("src", "/img/profile.png");-->
-
-    <!--                if (res.data && typeof res.data.profileWord !== "undefined") {-->
-    <!--                    $("#profileWordInput").val(res.data.profileWord || "");-->
-    <!--                    $("#profileWordCount").text((res.data.profileWord || "").length);-->
-    <!--                    $(".profileWordText").text(res.data.profileWord || "-");-->
-    <!--                } else {-->
-    <!--                    $(".profileWordText").text("-");-->
-    <!--                }-->
-
-    <!--                $("#profileEditError").addClass("d-none").text("");-->
-    <!--            },-->
-    <!--            error: function () {-->
-    <!--                $("#profileEditError")-->
-    <!--                    .removeClass("d-none")-->
-    <!--                    .text("프로필 이미지 삭제 중 오류");-->
-    <!--            }-->
-    <!--        });-->
-    <!--    });-->
-    <!--</script>-->
-
+                    $("#profileImgPreview").attr("src", "/img/profile.png");
+                    $("#profileImgInput").val("");
+                    $("#btnDeleteProfileImg").addClass("d-none");
+                } else {
+                    alert("프로필 삭제 실패!");
+                }
+            }
+        });
+    });
+</script>
 </th:block>

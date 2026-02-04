@@ -93,7 +93,7 @@
 <th:block th:fragment="PostPopupScript">
     <script>lucide.createIcons();</script>
     <script>
-        (function () {
+        $(document).ready(function () {
 
             window.postUploaderState = window.postUploaderState || {
                 selectedFiles: []
@@ -101,6 +101,7 @@
                 , removedImageIds: []
                 , postSwiper: null
             };
+
 
             function st() { return window.postUploaderState; }
             function files() { return st().selectedFiles; }
@@ -393,11 +394,11 @@
                 $("#drop-zone").removeClass("drag-over");
             });
 
-        })();
+        });
     </script>
 
     <script>
-        (function () {
+        $(document).ready(function ()  {
             const $country = $("#countrySelect");
             const $city = $("#cityNameSelect");
             const $lat = $("#latitude");
@@ -478,7 +479,7 @@
             });
 
             loadCountries();
-        })();
+        });
     </script>
     <script>
         $("#uploadBtn").on("click.postSubmit", function () {
