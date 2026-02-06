@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 
 public class FileManager {
 
-    public final static String FILE_UPLOAD_PATH = "C:\\Users\\B-1\\KMK\\upload";
+    public final static String FILE_UPLOAD_PATH = "/home/ec2-user/upload/images";
 
     public static String saveFile(long userId, MultipartFile file) {
         if (file == null) {

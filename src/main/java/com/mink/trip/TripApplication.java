@@ -2,9 +2,10 @@ package com.mink.trip;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class TripApplication {
+public class TripApplication extends SpringBootServletInitializer  {
 
     public static void main(String[] args) {
         SpringApplication.run(TripApplication.class, args);
