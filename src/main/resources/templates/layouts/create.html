@@ -4,8 +4,8 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">
-                    <button type="button" class="btn-choice" onclick="openPostModal()">게시물 만들기</button>
-                    <button type="button" class="btn-choice" onclick="openWishModal()">위시리스트 만들기</button>
+                    <button type="button" class="btn-choice btn-open-post">게시물 만들기</button>
+                    <button type="button" class="btn-choice btn-open-wish">위시리스트 만들기</button>
                 </div>
             </div>
         </div>
@@ -24,27 +24,12 @@
 <th:block th:fragment="createPopupScript">
 
     <script>
-        function openPostModal() {
-            $('#createChoiceModal').modal('hide');
-
-            setTimeout(function () {
-                $('#postCreateModal').modal({
-                    backdrop: 'static',
-                    keyboard: false
-                });
-            }, 300);
-        }
-
-        function openWishModal() {
-            $('#createChoiceModal').modal('hide');
-
-            setTimeout(function () {
-                $('#wishCreateModal').modal({
-                    backdrop: 'static',
-                    keyboard: false
-                });
-            }, 300);
-        }
+        $(document).on("click", ".btn-open-post", function () {
+            $("#postCreateModal").modal("show");
+        });
+        $(document).on("click", ".btn-open-wish", function () {
+            $("#wishCreateModalY").modal("show");
+        });
 
     </script>
     <th:block th:replace="post/write :: PostPopupScript"></th:block>

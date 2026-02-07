@@ -13,16 +13,17 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/comment")
 public class CommentRestController {
 
     private final CommentService commentService;
-    @GetMapping("/post/comment/list")
+    @GetMapping("/list")
     public List<CommentDetail> getComments(@RequestParam Long postId,
                                            HttpSession session) {
         long userId = (Long) session.getAttribute("userId");
         return commentService.getCommentList(postId,userId);
     }
-    @PostMapping("/post/comment/write")
+    @PostMapping("/write")
     public ApiResponse<Void> writeComment(
             @RequestParam long postId,
             @RequestParam String comments,

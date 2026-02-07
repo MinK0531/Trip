@@ -6,20 +6,19 @@
         <div class="border-t border-gray-300 border-b relative h-20 flex items-center px-4 overflow-hidden">
             <div class="flex items-center gap-3 z-10">
                 <div class="w-12 h-12 rounded-full border-2 border-gray-100 overflow-hidden bg-orange-100">
-                    <img th:src="${post.profileImg != null and post.profileImg != '' ? post.profileImg : '/img/profile.png'}"
+                    <img th:src="${post.profileImg != null ? post.profileImg : '/img/profile.png'}"
                          alt="Profile"
                          class="w-full h-full object-cover postcard-profile-img">
                 </div>
 
                 <div>
                     <p class="font-bold text-lg"
-                       th:text="${post.nickName != null ? post.nickName : 'User'}">User</p>
+                       th:text="${post.nickName}">User</p>
 
                     <div class="flex items-center gap-2 text-sm text-gray-500">
                         <i data-lucide="globe" class="w-3.5 h-3.5"></i>
-                        <span th:text="${post.countryName != null ? post.countryName : ''}">나라</span>
+                        <span th:text="${post.countryName}">나라</span>
                         <span class="text-xs"
-                              th:if="${post.createdAt != null}"
                               th:text="${#temporals.format(post.createdAt,'yyyy-MM-dd')}"></span>
                     </div>
                 </div>
@@ -51,14 +50,7 @@
                    data-toggle="modal"
                    data-target="#moreModal"
                    th:data-post-id="${post.id}"
-                   th:data-contents="${post.contents}"
-                   th:data-country-id="${post.countryId}"
-                   th:data-city-name="${post.cityName}"
-                   th:data-place-name="${post.placeName}"
-                   th:data-atmosphere="${post.atmosphere}"
-                   th:data-music-url="${post.musicUrl}"
-                   th:attr="data-images=${imgs}"></i>
-            </div>
+                   th:data-type="POST"></i> </div>
         </div>
 
         <div class="relative bg-gray-50 aspect-square overflow-hidden">
@@ -100,17 +92,9 @@
                         <span class="count-text" th:text="${post.likeCount != null ? post.likeCount : 0}">0</span>
                     </button>
 
-                    <button type="button" class="open-post-detail ml-2"
-                            th:data-post-id="${post.id}"
-                            th:data-nickname="${post.nickName != null ? post.nickName : ''}"
-                            th:data-location="|${post.countryName != null ? post.countryName : ''} - ${post.cityName != null ? post.cityName : ''}|"
-                            th:data-content="${post.contents != null ? post.contents : ''}"
-                            th:data-city-name="${post.cityName}"
-                            th:data-place-name="${post.placeName}"
-                            th:data-atmosphere="${post.atmosphere}">
-                        <i class="bi bi-chat text-dark btn-like-icon icon-stroke-thick"></i>
-                        <span class="count-text"
-                              th:text="${post.commentCount != null ? post.commentCount : 0}">0</span>
+                    <button type="button" class="open-post-detail-trigger flex items-center gap-1.5"
+                            th:data-post-id="${post.id}"> <i class="bi bi-chat text-2xl"></i>
+                        <span class="font-bold text-sm" th:text="${post.commentCount}">0</span>
                     </button>
 
                     <button type="button" class="ml-3">
